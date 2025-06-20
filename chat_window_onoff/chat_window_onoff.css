@@ -1,0 +1,38 @@
+/* チャット表示/非表示切り替えボタン */
+#toggle-chat-button {
+    position: fixed;
+    left: 60px; /* ⚙️アイコン(left:50px, width:40px)の隣に配置 */
+    bottom: 50px;
+    width: 40px;
+    height: 40px;
+    background-color: #000;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    z-index: 15;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    opacity: 0.5;
+    transition: opacity 0.3s, background-color 0.3s;
+}
+
+#toggle-chat-button:hover {
+    opacity: 1;
+    background-color: #444;
+}
+
+/* ボタンがアクティブ（チャット非表示）な時のスタイル */
+#toggle-chat-button.active {
+    background-color: #000000; /* SillyTavernのテーマに合わせた紫系の色 */
+    opacity: 0.5;
+}
+
+/* bodyにこのクラスが付くと、対象要素が非表示になる */
+body.chat-window-is-hidden #chat,
+body.chat-window-is-hidden #form_sheld {
+    display: none !important;
+}
