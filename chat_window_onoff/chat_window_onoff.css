@@ -1,7 +1,8 @@
 /* チャット表示/非表示切り替えボタン */
 #toggle-chat-button {
     position: fixed;
-    left: 60px; /* ⚙️アイコン(left:50px, width:40px)の隣に配置 */
+    /* ⚙️アイコン(left:10px, width:40px)の隣に配置するため、10px + 40px + 10px(間隔) = 60px に設定 */
+    left: 60px; 
     bottom: 50px;
     width: 40px;
     height: 40px;
@@ -25,14 +26,25 @@
     background-color: #444;
 }
 
-/* ボタンがアクティブ（チャット非表示）な時のスタイル */
+/* ボタンがアクティブ（チャット透過中）な時のスタイル */
 #toggle-chat-button.active {
-    background-color: #000000; /* SillyTavernのテーマに合わせた紫系の色 */
+    background-color: #000000;
     opacity: 0.5;
 }
 
-/* bodyにこのクラスが付くと、対象要素が非表示になる */
+/* --- ここからが変更箇所 --- */
+
+/* 透過効果のためのトランジションを通常時に設定 */
+#chat,
+#form_sheld {
+    /* opacity(透明度)とvisibility(可視性)を0.2秒かけて変化させる */
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* bodyにこのクラスが付くと、対象要素が透過される */
 body.chat-window-is-hidden #chat,
 body.chat-window-is-hidden #form_sheld {
-    display: none !important;
+    opacity: 0 !important; /* 要素を完全に透明にする */
+    visibility: hidden !important; /* スクリーンリーダーなどから隠し、レイアウトスペースは維持する */
+    pointer-events: none !important; /* 透明な時に下の要素をクリックできるようにする */
 }
