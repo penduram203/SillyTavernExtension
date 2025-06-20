@@ -4,7 +4,6 @@
     --strong-font-weight: 700;
     --strong-line-height: 1.3;
     --strong-outline-width: 1px;
-    /* 色と透過はJSからRGBとOpacityで設定 */
     --strong-text-rgb: 255, 255, 255;
     --strong-outline-rgb: 0, 0, 0;
     --strong-text-opacity: 1;
@@ -14,7 +13,6 @@
     --normal-font-weight: 400;
     --normal-line-height: 1.5;
     --normal-outline-width: 1px;
-    /* 色と透過はJSからRGBとOpacityで設定 */
     --normal-text-rgb: 221, 221, 221;
     --normal-outline-rgb: 0, 0, 0;
     --normal-text-opacity: 1;
@@ -26,9 +24,9 @@
 
 #text-styling-panel {
     position: fixed;
-    top: 300px;
+    top: 250px;
     left: 10px;
-    width: 450px; /* 幅を拡大して2列レイアウトに対応 */
+    width: 450px;
     min-height: 200px;
     border: 1px solid #444;
     background-color: #222;
@@ -59,53 +57,31 @@
     margin: -15px -15px 15px -15px;
 }
 
-#minimize-button {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 20px;
-    height: 20px;
-    background-color: #555;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    line-height: 1;
-    z-index: 20;
-}
-
-#minimize-button:hover {
-    background-color: #666;
-}
+/* 最小化ボタンのCSSを削除 */
 
 #restore-panel-button {
     position: fixed;
-    left: 50px;
+    left: 10px;
     bottom: 50px;
     width: 40px;
     height: 40px;
-    background-color: #333;
+    background-color: #000;
     color: white;
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    display: none;
+    /* display: none; を削除し、常に表示されるように display: flex; を設定 */
+    display: flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
     z-index: 15;
     box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-    opacity: 0.7;
+    opacity: 0.5;
     transition: opacity 0.3s;
 }
 
-#restore-panel-button.visible {
-    display: flex;
-}
+/* .visible クラスは不要になったため削除 */
 
 #restore-panel-button:hover {
     opacity: 1;
@@ -174,16 +150,11 @@
 #chat .mes_text strong,
 #chat .mes_text strong *,
 #chat .mes_text strong q {
-    /* テキストストローク方式の縁取り */
     -webkit-text-stroke: var(--strong-outline-width) rgba(var(--strong-outline-rgb), var(--strong-text-opacity));
     text-stroke: var(--strong-outline-width) rgba(var(--strong-outline-rgb), var(--strong-text-opacity));
-    
-    /* テキスト色、サイズ、太さ */
     color: rgba(var(--strong-text-rgb), var(--strong-text-opacity)) !important;
     font-size: var(--strong-font-size) !important;
     font-weight: var(--strong-font-weight) !important;
-    
-    /* 行間調整 */
     line-height: var(--strong-line-height) !important;
     display: inline-block;
 }
@@ -194,16 +165,11 @@
 #chat .mes_text div,
 #chat .mes_text span,
 #chat .mes_text br {
-    /* テキストストローク方式の縁取り */
     -webkit-text-stroke: var(--normal-outline-width) rgba(var(--normal-outline-rgb), var(--normal-text-opacity));
     text-stroke: var(--normal-outline-width) rgba(var(--normal-outline-rgb), var(--normal-text-opacity));
-    
-    /* テキスト色、サイズ、太さ */
     color: rgba(var(--normal-text-rgb), var(--normal-text-opacity)) !important;
     font-size: var(--normal-font-size) !important;
     font-weight: var(--normal-font-weight) !important;
-    
-    /* 行間調整 */
     line-height: var(--normal-line-height) !important;
 }
 
