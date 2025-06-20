@@ -203,31 +203,6 @@
     line-height: var(--normal-line-height) !important;
 }
 
-/* フォールバック: text-strokeをサポートしない場合の代替スタイル */
-@supports not ((-webkit-text-stroke: 1px black) or (text-stroke: 1px black)) {
-    #chat .mes_text strong,
-    #chat .mes_text strong *,
-    #chat .mes_text strong q {
-        text-shadow: 
-            0 0 var(--strong-outline-width) var(--strong-outline-color),
-            0 0 var(--strong-outline-width) var(--strong-outline-color),
-            0 0 var(--strong-outline-width) var(--strong-outline-color),
-            0 0 var(--strong-outline-width) var(--strong-outline-color) !important;
-    }
-    
-    #chat .mes_text,
-    #chat .mes_text p,
-    #chat .mes_text div,
-    #chat .mes_text span,
-    #chat .mes_text br {
-        text-shadow: 
-            0 0 var(--normal-outline-width) var(--normal-outline-color),
-            0 0 var(--normal-outline-width) var(--normal-outline-color),
-            0 0 var(--normal-outline-width) var(--normal-outline-color),
-            0 0 var(--normal-outline-width) var(--normal-outline-color) !important;
-    }
-}
-
 /* チャットウィンドウ透過 */
 #chat {
     background-color: rgba(var(--chat-bg-rgb), var(--chat-opacity)) !important;
