@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 最小化ボタン（初期状態では非表示）
     const minimizeButton = document.createElement('button');
-    minimizeButton.id = 'minimize-button';
+    minimizeButton.id = 'image-display_minimize-button';
     minimizeButton.textContent = '復元';
     minimizeButton.title = '元のサイズに戻す';
     minimizeButton.style.padding = '5px 10px';
