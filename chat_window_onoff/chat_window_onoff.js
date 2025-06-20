@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('チャットウィンドウ On/Off 拡張機能: 初期化開始');
+    // コンソールログのメッセージを機能に合わせて変更
+    console.log('チャットウィンドウ透過切り替え拡張機能: 初期化開始');
 
     const STORAGE_KEY = 'chatWindowHiddenState';
 
@@ -9,13 +10,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const toggleButton = document.createElement('button');
         toggleButton.id = 'toggle-chat-button';
         toggleButton.textContent = '💡';
-        toggleButton.title = 'チャットウィンドウの表示/非表示';
+        // titleを機能に合わせて変更
+        toggleButton.title = 'チャットウィンドウの透過/不透過';
         document.body.appendChild(toggleButton);
         console.log('💡 アイコンボタンをDOMに追加しました。');
 
         // 2. クリックイベントの設定
         toggleButton.addEventListener('click', () => {
-            // bodyにクラスをトグルしてチャットウィンドウの表示を切り替える
+            // bodyにクラスをトグルすることで、CSSで定義した透過スタイルを適用/解除する
+            // 連携するCSS側で display:none から opacity:0 に変更されていることが前提
             document.body.classList.toggle('chat-window-is-hidden');
             
             // ボタン自身の状態を更新 (アクティブ/非アクティブ)
@@ -24,8 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 状態をlocalStorageに保存
             try {
+                // コンソールログのメッセージを機能に合わせて変更
                 localStorage.setItem(STORAGE_KEY, isHidden);
-                console.log(`チャットウィンドウの状態を保存: ${isHidden ? '非表示' : '表示'}`);
+                console.log(`チャットウィンドウの状態を保存: ${isHidden ? '透過' : '不透過'}`);
             } catch (e) {
                 console.error('localStorageへの保存に失敗しました:', e);
             }
@@ -37,11 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (savedState === 'true') {
                 document.body.classList.add('chat-window-is-hidden');
                 toggleButton.classList.add('active');
-                console.log('保存された状態（非表示）を復元しました。');
+                // コンソールログのメッセージを機能に合わせて変更
+                console.log('保存された状態（透過）を復元しました。');
             }
         } catch (e) {
             console.error('localStorageからの状態復元に失敗しました:', e);
         }
 
-    }, 500); // 500msの遅延で、他要素の読み込み完了を待つ
+    }, 500); // 500msの遅延
 });
