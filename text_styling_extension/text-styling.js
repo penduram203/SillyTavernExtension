@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         strongOutlineColor: '#000000',
         strongOutlineWidth: 1,
         strongLineHeight: 1.3,
+        strongTextOpacity: 1.0, // 追加
         
         // 通常テキスト設定
         normalFontSize: 100,
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         normalOutlineColor: '#000000',
         normalOutlineWidth: 1,
         normalLineHeight: 1.5,
+        normalTextOpacity: 1.0, // 追加
         
         // チャットウィンドウ設定
         chatWindowOpacity: 1.0,
@@ -25,6 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // パネル状態
         panelMinimized: false
     };
+    
+    // ヘルパー関数: HEXカラーをRGB文字列に変換
+    function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 0, 0';
+    }
 
     // 操作パネル作成
     const panel = document.createElement('div');
@@ -93,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const strongSection = document.createElement('div');
     strongSection.className = 'text-styling-section';
     strongSection.innerHTML = `
-        <h3>強調テキスト設定 (&lt;strong&gt;タグ内)</h3>
+        <h3>強調テキスト設定 (<strong>タグ内)</h3>
         
         <div class="text-styling-control-group">
             <label for="strong-font-size">
@@ -132,6 +140,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </label>
             <input type="range" id="strong-outline-width" min="0" max="5" step="0.1" value="${DEFAULTS.strongOutlineWidth}">
         </div>
+        
+        <div class="text-styling-control-group">
+            <label for="strong-text-opacity">
+                文字透過度: <span id="strong-text-opacity-value">${DEFAULTS.strongTextOpacity * 100}</span>%
+            </label>
+            <input type="range" id="strong-text-opacity" min="0" max="100" step="1" value="${DEFAULTS.strongTextOpacity * 100}">
+        </div>
     `;
     leftColumn.appendChild(strongSection);
     
@@ -139,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const normalSection = document.createElement('div');
     normalSection.className = 'text-styling-section';
     normalSection.innerHTML = `
-        <h3>通常テキスト設定 (&lt;strong&gt;タグ外)</h3>
+        <h3>通常テキスト設定 (<strong>タグ外)</h3>
         
         <div class="text-styling-control-group">
             <label for="normal-font-size">
@@ -178,6 +193,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </label>
             <input type="range" id="normal-outline-width" min="0" max="5" step="0.1" value="${DEFAULTS.normalOutlineWidth}">
         </div>
+
+        <div class="text-styling-control-group">
+            <label for="normal-text-opacity">
+                文字透過度: <span id="normal-text-opacity-value">${DEFAULTS.normalTextOpacity * 100}</span>%
+            </label>
+            <input type="range" id="normal-text-opacity" min="0" max="100" step="1" value="${DEFAULTS.normalTextOpacity * 100}">
+        </div>
     `;
     rightColumn.appendChild(normalSection);
     
@@ -210,6 +232,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const strongOutlineColorInput = document.getElementById('strong-outline-color');
     const strongOutlineWidthInput = document.getElementById('strong-outline-width');
     const strongOutlineWidthValue = document.getElementById('strong-outline-width-value');
+    const strongTextOpacityInput = document.getElementById('strong-text-opacity'); // 追加
+    const strongTextOpacityValue = document.getElementById('strong-text-opacity-value'); // 追加
     
     // 通常テキスト設定
     const normalFontSizeInput = document.getElementById('normal-font-size');
@@ -222,29 +246,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const normalOutlineColorInput = document.getElementById('normal-outline-color');
     const normalOutlineWidthInput = document.getElementById('normal-outline-width');
     const normalOutlineWidthValue = document.getElementById('normal-outline-width-value');
+    const normalTextOpacityInput = document.getElementById('normal-text-opacity'); // 追加
+    const normalTextOpacityValue = document.getElementById('normal-text-opacity-value'); // 追加
     
     // チャットウィンドウ設定
     const chatOpacityInput = document.getElementById('chat-opacity');
     const chatOpacityValue = document.getElementById('chat-opacity-value');
-
-    // CSS変数を初期化
-    document.documentElement.style.setProperty('--strong-font-size', `${DEFAULTS.strongFontSize}%`);
-    document.documentElement.style.setProperty('--strong-font-weight', DEFAULTS.strongFontWeight);
-    document.documentElement.style.setProperty('--strong-line-height', DEFAULTS.strongLineHeight);
-    document.documentElement.style.setProperty('--strong-text-color', DEFAULTS.strongTextColor);
-    document.documentElement.style.setProperty('--strong-outline-color', DEFAULTS.strongOutlineColor);
-    document.documentElement.style.setProperty('--strong-outline-width', `${DEFAULTS.strongOutlineWidth}px`);
-    
-    document.documentElement.style.setProperty('--normal-font-size', `${DEFAULTS.normalFontSize}%`);
-    document.documentElement.style.setProperty('--normal-font-weight', DEFAULTS.normalFontWeight);
-    document.documentElement.style.setProperty('--normal-line-height', DEFAULTS.normalLineHeight);
-    document.documentElement.style.setProperty('--normal-text-color', DEFAULTS.normalTextColor);
-    document.documentElement.style.setProperty('--normal-outline-color', DEFAULTS.normalOutlineColor);
-    document.documentElement.style.setProperty('--normal-outline-width', `${DEFAULTS.normalOutlineWidth}px`);
-    
-    document.documentElement.style.setProperty('--chat-opacity', DEFAULTS.chatWindowOpacity);
-    
-    console.log('CSS変数を初期化');
 
     // 設定変更イベントリスナー
     // 強調テキスト
@@ -254,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     strongTextColorInput.addEventListener('input', () => updateStrongStyle());
     strongOutlineColorInput.addEventListener('input', () => updateStrongStyle());
     strongOutlineWidthInput.addEventListener('input', () => updateStrongStyle());
+    strongTextOpacityInput.addEventListener('input', () => updateStrongStyle()); // 追加
     
     // 通常テキスト
     normalFontSizeInput.addEventListener('input', () => updateNormalStyle());
@@ -262,6 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
     normalTextColorInput.addEventListener('input', () => updateNormalStyle());
     normalOutlineColorInput.addEventListener('input', () => updateNormalStyle());
     normalOutlineWidthInput.addEventListener('input', () => updateNormalStyle());
+    normalTextOpacityInput.addEventListener('input', () => updateNormalStyle()); // 追加
     
     // チャットウィンドウ
     chatOpacityInput.addEventListener('input', updateChatWindowOpacity);
@@ -274,18 +283,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const textColor = strongTextColorInput.value;
         const outlineColor = strongOutlineColorInput.value;
         const outlineWidth = parseFloat(strongOutlineWidthInput.value);
+        const textOpacity = parseFloat(strongTextOpacityInput.value) / 100;
         
         strongFontSizeValue.textContent = fontSize;
         strongFontWeightValue.textContent = fontWeight;
         strongLineHeightValue.textContent = lineHeight.toFixed(1);
         strongOutlineWidthValue.textContent = outlineWidth.toFixed(1);
+        strongTextOpacityValue.textContent = Math.round(textOpacity * 100);
         
         document.documentElement.style.setProperty('--strong-font-size', `${fontSize}%`);
         document.documentElement.style.setProperty('--strong-font-weight', fontWeight);
         document.documentElement.style.setProperty('--strong-line-height', lineHeight);
-        document.documentElement.style.setProperty('--strong-text-color', textColor);
-        document.documentElement.style.setProperty('--strong-outline-color', outlineColor);
         document.documentElement.style.setProperty('--strong-outline-width', `${outlineWidth}px`);
+        document.documentElement.style.setProperty('--strong-text-rgb', hexToRgb(textColor));
+        document.documentElement.style.setProperty('--strong-outline-rgb', hexToRgb(outlineColor));
+        document.documentElement.style.setProperty('--strong-text-opacity', textOpacity);
         
         saveSettings();
     }
@@ -298,19 +310,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const textColor = normalTextColorInput.value;
         const outlineColor = normalOutlineColorInput.value;
         const outlineWidth = parseFloat(normalOutlineWidthInput.value);
-        
+        const textOpacity = parseFloat(normalTextOpacityInput.value) / 100;
+
         normalFontSizeValue.textContent = fontSize;
         normalFontWeightValue.textContent = fontWeight;
         normalLineHeightValue.textContent = lineHeight.toFixed(1);
         normalOutlineWidthValue.textContent = outlineWidth.toFixed(1);
+        normalTextOpacityValue.textContent = Math.round(textOpacity * 100);
         
         document.documentElement.style.setProperty('--normal-font-size', `${fontSize}%`);
         document.documentElement.style.setProperty('--normal-font-weight', fontWeight);
         document.documentElement.style.setProperty('--normal-line-height', lineHeight);
-        document.documentElement.style.setProperty('--normal-text-color', textColor);
-        document.documentElement.style.setProperty('--normal-outline-color', outlineColor);
         document.documentElement.style.setProperty('--normal-outline-width', `${outlineWidth}px`);
-        
+        document.documentElement.style.setProperty('--normal-text-rgb', hexToRgb(textColor));
+        document.documentElement.style.setProperty('--normal-outline-rgb', hexToRgb(outlineColor));
+        document.documentElement.style.setProperty('--normal-text-opacity', textOpacity);
+
         saveSettings();
     }
 
@@ -332,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
             strongTextColor: strongTextColorInput.value,
             strongOutlineColor: strongOutlineColorInput.value,
             strongOutlineWidth: parseFloat(strongOutlineWidthInput.value),
+            strongTextOpacity: parseFloat(strongTextOpacityInput.value) / 100, // 追加
             
             // 通常テキスト設定
             normalFontSize: parseInt(normalFontSizeInput.value),
@@ -340,6 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
             normalTextColor: normalTextColorInput.value,
             normalOutlineColor: normalOutlineColorInput.value,
             normalOutlineWidth: parseFloat(normalOutlineWidthInput.value),
+            normalTextOpacity: parseFloat(normalTextOpacityInput.value) / 100, // 追加
             
             // チャットウィンドウ設定
             chatWindowOpacity: parseFloat(chatOpacityInput.value) / 100,
@@ -367,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 strongTextColorInput.value = settings.strongTextColor || DEFAULTS.strongTextColor;
                 strongOutlineColorInput.value = settings.strongOutlineColor || DEFAULTS.strongOutlineColor;
                 strongOutlineWidthInput.value = settings.strongOutlineWidth || DEFAULTS.strongOutlineWidth;
+                strongTextOpacityInput.value = Math.round((settings.strongTextOpacity !== undefined ? settings.strongTextOpacity : DEFAULTS.strongTextOpacity) * 100);
                 
                 // 通常テキスト設定
                 normalFontSizeInput.value = settings.normalFontSize || DEFAULTS.normalFontSize;
@@ -375,46 +393,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 normalTextColorInput.value = settings.normalTextColor || DEFAULTS.normalTextColor;
                 normalOutlineColorInput.value = settings.normalOutlineColor || DEFAULTS.normalOutlineColor;
                 normalOutlineWidthInput.value = settings.normalOutlineWidth || DEFAULTS.normalOutlineWidth;
-                
+                normalTextOpacityInput.value = Math.round((settings.normalTextOpacity !== undefined ? settings.normalTextOpacity : DEFAULTS.normalTextOpacity) * 100);
+
                 // チャットウィンドウ設定
-                chatOpacityInput.value = Math.round((settings.chatWindowOpacity || DEFAULTS.chatWindowOpacity) * 100);
+                chatOpacityInput.value = Math.round((settings.chatWindowOpacity !== undefined ? settings.chatWindowOpacity : DEFAULTS.chatWindowOpacity) * 100);
                 
-                // 表示値を更新
-                strongFontSizeValue.textContent = strongFontSizeInput.value;
-                strongFontWeightValue.textContent = strongFontWeightInput.value;
-                strongLineHeightValue.textContent = parseFloat(strongLineHeightInput.value).toFixed(1);
-                strongOutlineWidthValue.textContent = parseFloat(strongOutlineWidthInput.value).toFixed(1);
-                
-                normalFontSizeValue.textContent = normalFontSizeInput.value;
-                normalFontWeightValue.textContent = normalFontWeightInput.value;
-                normalLineHeightValue.textContent = parseFloat(normalLineHeightInput.value).toFixed(1);
-                normalOutlineWidthValue.textContent = parseFloat(normalOutlineWidthInput.value).toFixed(1);
-                
-                chatOpacityValue.textContent = chatOpacityInput.value;
-                
-                // CSS変数を更新
-                document.documentElement.style.setProperty('--strong-font-size', `${strongFontSizeInput.value}%`);
-                document.documentElement.style.setProperty('--strong-font-weight', strongFontWeightInput.value);
-                document.documentElement.style.setProperty('--strong-line-height', strongLineHeightInput.value);
-                document.documentElement.style.setProperty('--strong-text-color', strongTextColorInput.value);
-                document.documentElement.style.setProperty('--strong-outline-color', strongOutlineColorInput.value);
-                document.documentElement.style.setProperty('--strong-outline-width', `${strongOutlineWidthInput.value}px`);
-                
-                document.documentElement.style.setProperty('--normal-font-size', `${normalFontSizeInput.value}%`);
-                document.documentElement.style.setProperty('--normal-font-weight', normalFontWeightInput.value);
-                document.documentElement.style.setProperty('--normal-line-height', normalLineHeightInput.value);
-                document.documentElement.style.setProperty('--normal-text-color', normalTextColorInput.value);
-                document.documentElement.style.setProperty('--normal-outline-color', normalOutlineColorInput.value);
-                document.documentElement.style.setProperty('--normal-outline-width', `${normalOutlineWidthInput.value}px`);
-                
-                document.documentElement.style.setProperty('--chat-opacity', settings.chatWindowOpacity || DEFAULTS.chatWindowOpacity);
-                
+                // 全てのスタイルを適用
+                updateStrongStyle();
+                updateNormalStyle();
+                updateChatWindowOpacity();
+
                 // パネル状態を復元
                 if (settings.panelMinimized) {
                     console.log('最小化状態を復元');
                     panel.classList.add('hidden');
                     restoreButton.classList.add('visible');
                 }
+                // restoreSettings内でsaveSettingsが呼ばれるのを防ぐために、ここで空の関数で上書き
+                const originalSave = saveSettings;
+                saveSettings = () => {};
+                updateStrongStyle();
+                updateNormalStyle();
+                updateChatWindowOpacity();
+                // saveSettingsを元に戻す
+                saveSettings = originalSave;
+
             } catch (e) {
                 console.error('設定復元エラー:', e);
                 setDefaultSettings();
@@ -434,6 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
         strongTextColorInput.value = DEFAULTS.strongTextColor;
         strongOutlineColorInput.value = DEFAULTS.strongOutlineColor;
         strongOutlineWidthInput.value = DEFAULTS.strongOutlineWidth;
+        strongTextOpacityInput.value = Math.round(DEFAULTS.strongTextOpacity * 100);
         
         // 通常テキスト設定
         normalFontSizeInput.value = DEFAULTS.normalFontSize;
@@ -442,39 +446,20 @@ document.addEventListener('DOMContentLoaded', () => {
         normalTextColorInput.value = DEFAULTS.normalTextColor;
         normalOutlineColorInput.value = DEFAULTS.normalOutlineColor;
         normalOutlineWidthInput.value = DEFAULTS.normalOutlineWidth;
+        normalTextOpacityInput.value = Math.round(DEFAULTS.normalTextOpacity * 100);
         
         // チャットウィンドウ設定
         chatOpacityInput.value = Math.round(DEFAULTS.chatWindowOpacity * 100);
         
-        // 表示値を更新
-        strongFontSizeValue.textContent = DEFAULTS.strongFontSize;
-        strongFontWeightValue.textContent = DEFAULTS.strongFontWeight;
-        strongLineHeightValue.textContent = DEFAULTS.strongLineHeight.toFixed(1);
-        strongOutlineWidthValue.textContent = DEFAULTS.strongOutlineWidth.toFixed(1);
-        
-        normalFontSizeValue.textContent = DEFAULTS.normalFontSize;
-        normalFontWeightValue.textContent = DEFAULTS.normalFontWeight;
-        normalLineHeightValue.textContent = DEFAULTS.normalLineHeight.toFixed(1);
-        normalOutlineWidthValue.textContent = DEFAULTS.normalOutlineWidth.toFixed(1);
-        
-        chatOpacityValue.textContent = Math.round(DEFAULTS.chatWindowOpacity * 100);
-        
-        // CSS変数を更新
-        document.documentElement.style.setProperty('--strong-font-size', `${DEFAULTS.strongFontSize}%`);
-        document.documentElement.style.setProperty('--strong-font-weight', DEFAULTS.strongFontWeight);
-        document.documentElement.style.setProperty('--strong-line-height', DEFAULTS.strongLineHeight);
-        document.documentElement.style.setProperty('--strong-text-color', DEFAULTS.strongTextColor);
-        document.documentElement.style.setProperty('--strong-outline-color', DEFAULTS.strongOutlineColor);
-        document.documentElement.style.setProperty('--strong-outline-width', `${DEFAULTS.strongOutlineWidth}px`);
-        
-        document.documentElement.style.setProperty('--normal-font-size', `${DEFAULTS.normalFontSize}%`);
-        document.documentElement.style.setProperty('--normal-font-weight', DEFAULTS.normalFontWeight);
-        document.documentElement.style.setProperty('--normal-line-height', DEFAULTS.normalLineHeight);
-        document.documentElement.style.setProperty('--normal-text-color', DEFAULTS.normalTextColor);
-        document.documentElement.style.setProperty('--normal-outline-color', DEFAULTS.normalOutlineColor);
-        document.documentElement.style.setProperty('--normal-outline-width', `${DEFAULTS.normalOutlineWidth}px`);
-        
-        document.documentElement.style.setProperty('--chat-opacity', DEFAULTS.chatWindowOpacity);
+        // saveSettingsを一時的に無効化
+        const originalSave = saveSettings;
+        saveSettings = () => {};
+        // スタイルを適用
+        updateStrongStyle();
+        updateNormalStyle();
+        updateChatWindowOpacity();
+        // saveSettingsを元に戻す
+        saveSettings = originalSave;
     }
 
     // 初期化
@@ -485,14 +470,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const chatElement = document.getElementById('chat');
         if (chatElement) {
             const chatBgColor = getComputedStyle(chatElement).backgroundColor;
-            const rgbValues = chatBgColor.match(/\d+/g);
-            if (rgbValues && rgbValues.length >= 3) {
-                document.documentElement.style.setProperty(
-                    '--chat-bg-rgb', 
-                    `${rgbValues[0]}, ${rgbValues[1]}, ${rgbValues[2]}`
-                );
-                console.log('チャット背景色を設定:', rgbValues);
-            }
+            document.documentElement.style.setProperty('--chat-bg-rgb', hexToRgb(chatBgColor));
+            console.log('チャット背景色を設定:', hexToRgb(chatBgColor));
         }
         
         // 設定を復元
