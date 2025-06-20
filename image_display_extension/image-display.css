@@ -85,7 +85,7 @@
 /* コントロールボタン共通スタイル */
 #reset-button, 
 #maximize-button, 
-#minimize-button {
+#image-display_minimize-button {
     padding: 5px 10px;
     cursor: pointer;
     background-color: #555;
