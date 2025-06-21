@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <h3>強調テキスト設定 (<strong>タグ内)</h3>
         <div class="text-styling-control-group">
             <label for="strong-font-size">文字サイズ: <span id="strong-font-size-value"></span>%</label>
-            <input type="range" id="strong-font-size" min="50" max="300" step="10">
+            <input type="range" id="strong-font-size" min="50" max="200" step="10">
         </div>
         <div class="text-styling-control-group">
             <label for="strong-font-weight">文字の太さ: <span id="strong-font-weight-value"></span></label>
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="text-styling-control-group">
             <label for="strong-outline-width">縁取り幅: <span id="strong-outline-width-value"></span>px</label>
-            <input type="range" id="strong-outline-width" min="0" max="15" step="1.0">
+            <input type="range" id="strong-outline-width" min="0" max="5" step="1.0">
         </div>
         <div class="text-styling-control-group">
             <label for="strong-text-opacity">文字/縁取り 透過度: <span id="strong-text-opacity-value"></span>%</label>
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <h3>通常テキスト設定 (<strong>タグ外)</h3>
         <div class="text-styling-control-group">
             <label for="normal-font-size">文字サイズ: <span id="normal-font-size-value"></span>%</label>
-            <input type="range" id="normal-font-size" min="50" max="300" step="10">
+            <input type="range" id="normal-font-size" min="50" max="200" step="10">
         </div>
         <div class="text-styling-control-group">
             <label for="normal-font-weight">文字の太さ: <span id="normal-font-weight-value"></span></label>
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="text-styling-control-group">
             <label for="normal-outline-width">縁取り幅: <span id="normal-outline-width-value"></span>px</label>
-            <input type="range" id="normal-outline-width" min="0" max="15" step="1.0">
+            <input type="range" id="normal-outline-width" min="0" max="5" step="1.0">
         </div>
         <div class="text-styling-control-group">
             <label for="normal-text-opacity">文字/縁取り 透過度: <span id="normal-text-opacity-value"></span>%</label>
