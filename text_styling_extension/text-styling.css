@@ -7,6 +7,7 @@
     --strong-text-rgb: 255, 255, 255;
     --strong-outline-rgb: 0, 0, 0;
     --strong-text-opacity: 1;
+    --strong-outline-opacity: 1.0; /* 1/1 の初期値 */
     
     /* 通常テキスト用変数 */
     --normal-font-size: 100%;
@@ -16,6 +17,7 @@
     --normal-text-rgb: 221, 221, 221;
     --normal-outline-rgb: 0, 0, 0;
     --normal-text-opacity: 1;
+    --normal-outline-opacity: 1.0; /* 1/1 の初期値 */
     
     /* チャットウィンドウ用変数 */
     --chat-opacity: 1;
@@ -57,8 +59,6 @@
     margin: -15px -15px 15px -15px;
 }
 
-/* 最小化ボタンのCSSを削除 */
-
 #restore-panel-button {
     position: fixed;
     left: 10px;
@@ -70,7 +70,6 @@
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    /* display: none; を削除し、常に表示されるように display: flex; を設定 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -81,14 +80,11 @@
     transition: opacity 0.3s;
 }
 
-/* .visible クラスは不要になったため削除 */
-
 #restore-panel-button:hover {
     opacity: 1;
     background-color: #444;
 }
 
-/* 2列レイアウト用コンテナ */
 .columns-container {
     display: flex;
     flex-wrap: wrap;
@@ -146,12 +142,45 @@
     font-size: 11px;
 }
 
-/* 強調テキストスタイル */
+/* 強調テキストスタイル (32方向text-shadow・透過率分離) */
 #chat .mes_text strong,
 #chat .mes_text strong *,
 #chat .mes_text strong q {
-    -webkit-text-stroke: var(--strong-outline-width) rgba(var(--strong-outline-rgb), var(--strong-text-opacity));
-    text-stroke: var(--strong-outline-width) rgba(var(--strong-outline-rgb), var(--strong-text-opacity));
+    text-shadow:
+        /* 16方向 */
+        var(--strong-outline-width) 0 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -1) 0 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        0 var(--strong-outline-width) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        0 calc(var(--strong-outline-width) * -1) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.707) calc(var(--strong-outline-width) * 0.707) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.707) calc(var(--strong-outline-width) * -0.707) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.707) calc(var(--strong-outline-width) * -0.707) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.707) calc(var(--strong-outline-width) * 0.707) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.924) calc(var(--strong-outline-width) * 0.383) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.924) calc(var(--strong-outline-width) * -0.383) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.924) calc(var(--strong-outline-width) * -0.383) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.924) calc(var(--strong-outline-width) * 0.383) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.383) calc(var(--strong-outline-width) * 0.924) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.383) calc(var(--strong-outline-width) * -0.924) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.383) calc(var(--strong-outline-width) * -0.924) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.383) calc(var(--strong-outline-width) * 0.924) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        /* 追加の16方向 */
+        calc(var(--strong-outline-width) * 0.981) calc(var(--strong-outline-width) * 0.195) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.981) calc(var(--strong-outline-width) * -0.195) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.981) calc(var(--strong-outline-width) * -0.195) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.981) calc(var(--strong-outline-width) * 0.195) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.195) calc(var(--strong-outline-width) * 0.981) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.195) calc(var(--strong-outline-width) * -0.981) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.195) calc(var(--strong-outline-width) * -0.981) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.195) calc(var(--strong-outline-width) * 0.981) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.831) calc(var(--strong-outline-width) * 0.556) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.831) calc(var(--strong-outline-width) * -0.556) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.831) calc(var(--strong-outline-width) * -0.556) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.831) calc(var(--strong-outline-width) * 0.556) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.556) calc(var(--strong-outline-width) * 0.831) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.556) calc(var(--strong-outline-width) * -0.831) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * 0.556) calc(var(--strong-outline-width) * -0.831) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)),
+        calc(var(--strong-outline-width) * -0.556) calc(var(--strong-outline-width) * 0.831) 0 rgba(var(--strong-outline-rgb), var(--strong-outline-opacity)) !important;
     color: rgba(var(--strong-text-rgb), var(--strong-text-opacity)) !important;
     font-size: var(--strong-font-size) !important;
     font-weight: var(--strong-font-weight) !important;
@@ -159,43 +188,51 @@
     display: inline-block;
 }
 
-/* 通常テキストスタイル */
+/* 通常テキストスタイル (32方向text-shadow・透過率分離) */
 #chat .mes_text,
 #chat .mes_text p,
 #chat .mes_text div,
 #chat .mes_text span,
 #chat .mes_text br {
-    -webkit-text-stroke: var(--normal-outline-width) rgba(var(--normal-outline-rgb), var(--normal-text-opacity));
-    text-stroke: var(--normal-outline-width) rgba(var(--normal-outline-rgb), var(--normal-text-opacity));
+    text-shadow:
+        /* 16方向 */
+        var(--normal-outline-width) 0 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -1) 0 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        0 var(--normal-outline-width) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        0 calc(var(--normal-outline-width) * -1) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.707) calc(var(--normal-outline-width) * 0.707) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.707) calc(var(--normal-outline-width) * -0.707) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.707) calc(var(--normal-outline-width) * -0.707) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.707) calc(var(--normal-outline-width) * 0.707) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.924) calc(var(--normal-outline-width) * 0.383) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.924) calc(var(--normal-outline-width) * -0.383) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.924) calc(var(--normal-outline-width) * -0.383) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.924) calc(var(--normal-outline-width) * 0.383) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.383) calc(var(--normal-outline-width) * 0.924) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.383) calc(var(--normal-outline-width) * -0.924) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.383) calc(var(--normal-outline-width) * -0.924) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.383) calc(var(--normal-outline-width) * 0.924) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        /* 追加の16方向 */
+        calc(var(--normal-outline-width) * 0.981) calc(var(--normal-outline-width) * 0.195) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.981) calc(var(--normal-outline-width) * -0.195) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.981) calc(var(--normal-outline-width) * -0.195) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.981) calc(var(--normal-outline-width) * 0.195) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.195) calc(var(--normal-outline-width) * 0.981) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.195) calc(var(--normal-outline-width) * -0.981) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.195) calc(var(--normal-outline-width) * -0.981) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.195) calc(var(--normal-outline-width) * 0.981) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.831) calc(var(--normal-outline-width) * 0.556) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.831) calc(var(--normal-outline-width) * -0.556) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.831) calc(var(--normal-outline-width) * -0.556) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.831) calc(var(--normal-outline-width) * 0.556) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.556) calc(var(--normal-outline-width) * 0.831) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.556) calc(var(--normal-outline-width) * -0.831) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * 0.556) calc(var(--normal-outline-width) * -0.831) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)),
+        calc(var(--normal-outline-width) * -0.556) calc(var(--normal-outline-width) * 0.831) 0 rgba(var(--normal-outline-rgb), var(--normal-outline-opacity)) !important;
     color: rgba(var(--normal-text-rgb), var(--normal-text-opacity)) !important;
     font-size: var(--normal-font-size) !important;
     font-weight: var(--normal-font-weight) !important;
     line-height: var(--normal-line-height) !important;
-}
-
-/* フォールバック: text-strokeをサポートしない場合の代替スタイル */
-@supports not ((-webkit-text-stroke: 1px black) or (text-stroke: 1px black)) {
-    #chat .mes_text strong,
-    #chat .mes_text strong *,
-    #chat .mes_text strong q {
-        text-shadow: 
-            0 0 var(--strong-outline-width) rgba(var(--strong-outline-rgb), var(--strong-text-opacity)),
-            0 0 var(--strong-outline-width) rgba(var(--strong-outline-rgb), var(--strong-text-opacity)),
-            0 0 var(--strong-outline-width) rgba(var(--strong-outline-rgb), var(--strong-text-opacity)),
-            0 0 var(--strong-outline-width) rgba(var(--strong-outline-rgb), var(--strong-text-opacity)) !important;
-    }
-    
-    #chat .mes_text,
-    #chat .mes_text p,
-    #chat .mes_text div,
-    #chat .mes_text span,
-    #chat .mes_text br {
-        text-shadow: 
-            0 0 var(--normal-outline-width) rgba(var(--normal-outline-rgb), var(--normal-text-opacity)),
-            0 0 var(--normal-outline-width) rgba(var(--normal-outline-rgb), var(--normal-text-opacity)),
-            0 0 var(--normal-outline-width) rgba(var(--normal-outline-rgb), var(--normal-text-opacity)),
-            0 0 var(--normal-outline-width) rgba(var(--normal-outline-rgb), var(--normal-text-opacity)) !important;
-    }
 }
 
 /* チャットウィンドウ透過 */
