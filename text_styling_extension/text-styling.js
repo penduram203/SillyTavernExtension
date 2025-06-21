@@ -34,20 +34,14 @@ document.addEventListener('DOMContentLoaded', () => {
     header.textContent = 'テキストスタイル設定';
     panel.appendChild(header);
 
-    // 最小化ボタンの作成コードをすべて削除
-
-    // 復元ボタン（⚙️アイコン）作成
     const restoreButton = document.createElement('button');
     restoreButton.id = 'restore-panel-button';
     restoreButton.textContent = '⚙️';
-    restoreButton.title = '設定パネルの表示/非表示'; // titleを変更
+    restoreButton.title = '設定パネルの表示/非表示';
     
-    // クリックイベントをトグル機能に変更
     restoreButton.onclick = function() {
         console.log('設定パネル表示切替ボタンがクリックされました');
-        // panelの 'hidden' クラスをトグル（あれば削除、なければ追加）
         panel.classList.toggle('hidden');
-        // 現在の状態を保存
         saveSettings();
     };
     
@@ -95,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="text-styling-control-group">
             <label for="strong-outline-width">縁取り幅: <span id="strong-outline-width-value"></span>px</label>
-            <input type="range" id="strong-outline-width" min="0" max="5" step="0.1">
+            <input type="range" id="strong-outline-width" min="0" max="10" step="0.1">
         </div>
         <div class="text-styling-control-group">
             <label for="strong-text-opacity">文字透過度: <span id="strong-text-opacity-value"></span>%</label>
@@ -130,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="text-styling-control-group">
             <label for="normal-outline-width">縁取り幅: <span id="normal-outline-width-value"></span>px</label>
-            <input type="range" id="normal-outline-width" min="0" max="5" step="0.1">
+            <input type="range" id="normal-outline-width" min="0" max="10" step="0.1">
         </div>
         <div class="text-styling-control-group">
             <label for="normal-text-opacity">文字透過度: <span id="normal-text-opacity-value"></span>%</label>
@@ -205,6 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const outlineColor = strongOutlineColorInput.value;
         const outlineWidth = parseFloat(strongOutlineWidthInput.value);
         const textOpacity = parseFloat(strongTextOpacityInput.value) / 100;
+        const outlineOpacity = textOpacity / 1; // 影の透過率を計算
         
         strongFontSizeValue.textContent = fontSize;
         strongFontWeightValue.textContent = fontWeight;
@@ -219,6 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.style.setProperty('--strong-text-rgb', hexToRgb(textColor));
         document.documentElement.style.setProperty('--strong-outline-rgb', hexToRgb(outlineColor));
         document.documentElement.style.setProperty('--strong-text-opacity', textOpacity);
+        document.documentElement.style.setProperty('--strong-outline-opacity', outlineOpacity); // 影の透過率をCSS変数として設定
         
         saveSettings();
     }
@@ -231,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const outlineColor = normalOutlineColorInput.value;
         const outlineWidth = parseFloat(normalOutlineWidthInput.value);
         const textOpacity = parseFloat(normalTextOpacityInput.value) / 100;
+        const outlineOpacity = textOpacity / 1; // 影の透過率を計算
 
         normalFontSizeValue.textContent = fontSize;
         normalFontWeightValue.textContent = fontWeight;
@@ -245,6 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.style.setProperty('--normal-text-rgb', hexToRgb(textColor));
         document.documentElement.style.setProperty('--normal-outline-rgb', hexToRgb(outlineColor));
         document.documentElement.style.setProperty('--normal-text-opacity', textOpacity);
+        document.documentElement.style.setProperty('--normal-outline-opacity', outlineOpacity); // 影の透過率をCSS変数として設定
 
         saveSettings();
     }
@@ -273,7 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
             normalOutlineWidth: parseFloat(normalOutlineWidthInput.value),
             normalTextOpacity: parseFloat(normalTextOpacityInput.value) / 100,
             chatWindowOpacity: parseFloat(chatOpacityInput.value) / 100,
-            // panelの状態を 'hidden' クラスの有無で判定
             panelMinimized: panel.classList.contains('hidden')
         };
         localStorage.setItem('textStylingSettings', JSON.stringify(settings));
@@ -303,14 +300,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 chatOpacityInput.value = Math.round((settings.chatWindowOpacity !== undefined ? settings.chatWindowOpacity : DEFAULTS.chatWindowOpacity) * 100);
                 
-                // パネルの状態を復元
                 if (settings.panelMinimized) {
                     panel.classList.add('hidden');
                 } else {
                     panel.classList.remove('hidden');
                 }
 
-                // スタイルを適用（この中でsaveSettingsが呼ばれるのを防ぐ）
                 const originalSave = saveSettings;
                 saveSettings = () => {};
                 updateStrongStyle();
