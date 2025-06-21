@@ -1,6 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('テキストスタイル拡張機能: 初期化開始');
     
+    // ▼▼▼ 削除 ▼▼▼
+    // SVGフィルターをbodyに追加する関数 (createSvgFilters) 全体を削除
+    // ▲▲▲ 削除 ▲▲▲
+
+    // ▼▼▼ 削除 ▼▼▼
+    // createSvgFilters(); // 起動時のフィルター生成呼び出しを削除
+    // ▲▲▲ 削除 ▲▲▲
+
     const DEFAULTS = {
         strongFontSize: 200,
         strongFontWeight: 700,
@@ -25,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 0, 0';
     }
 
+    // (中略: パネルのHTML生成部分は変更なし)
     const panel = document.createElement('div');
     panel.id = 'text-styling-panel';
     document.body.appendChild(panel);
@@ -40,13 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
     restoreButton.title = '設定パネルの表示/非表示';
     
     restoreButton.onclick = function() {
-        console.log('設定パネル表示切替ボタンがクリックされました');
         panel.classList.toggle('hidden');
         saveSettings();
     };
     
     document.body.appendChild(restoreButton);
-    console.log('設定パネル表示切替ボタンを作成・登録');
 
     const mainContainer = document.createElement('div');
     panel.appendChild(mainContainer);
@@ -89,10 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="text-styling-control-group">
             <label for="strong-outline-width">縁取り幅: <span id="strong-outline-width-value"></span>px</label>
-            <input type="range" id="strong-outline-width" min="0" max="10" step="0.1">
+            <input type="range" id="strong-outline-width" min="0" max="15" step="1.0">
         </div>
         <div class="text-styling-control-group">
-            <label for="strong-text-opacity">文字透過度: <span id="strong-text-opacity-value"></span>%</label>
+            <label for="strong-text-opacity">文字/縁取り 透過度: <span id="strong-text-opacity-value"></span>%</label>
             <input type="range" id="strong-text-opacity" min="0" max="100" step="1">
         </div>
     `;
@@ -124,10 +131,10 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="text-styling-control-group">
             <label for="normal-outline-width">縁取り幅: <span id="normal-outline-width-value"></span>px</label>
-            <input type="range" id="normal-outline-width" min="0" max="10" step="0.1">
+            <input type="range" id="normal-outline-width" min="0" max="15" step="1.0">
         </div>
         <div class="text-styling-control-group">
-            <label for="normal-text-opacity">文字透過度: <span id="normal-text-opacity-value"></span>%</label>
+            <label for="normal-text-opacity">文字/縁取り 透過度: <span id="normal-text-opacity-value"></span>%</label>
             <input type="range" id="normal-text-opacity" min="0" max="100" step="1">
         </div>
     `;
@@ -191,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     chatOpacityInput.addEventListener('input', updateChatWindowOpacity);
 
+    // ▼▼▼ ここから変更 ▼▼▼
     function updateStrongStyle() {
         const fontSize = parseInt(strongFontSizeInput.value);
         const fontWeight = parseInt(strongFontWeightInput.value);
@@ -199,7 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const outlineColor = strongOutlineColorInput.value;
         const outlineWidth = parseFloat(strongOutlineWidthInput.value);
         const textOpacity = parseFloat(strongTextOpacityInput.value) / 100;
-        const outlineOpacity = textOpacity / 1; // 影の透過率を計算
         
         strongFontSizeValue.textContent = fontSize;
         strongFontWeightValue.textContent = fontWeight;
@@ -207,14 +214,16 @@ document.addEventListener('DOMContentLoaded', () => {
         strongOutlineWidthValue.textContent = outlineWidth.toFixed(1);
         strongTextOpacityValue.textContent = Math.round(textOpacity * 100);
         
+        // CSS変数の更新
         document.documentElement.style.setProperty('--strong-font-size', `${fontSize}%`);
         document.documentElement.style.setProperty('--strong-font-weight', fontWeight);
         document.documentElement.style.setProperty('--strong-line-height', lineHeight);
-        document.documentElement.style.setProperty('--strong-outline-width', `${outlineWidth}px`);
         document.documentElement.style.setProperty('--strong-text-rgb', hexToRgb(textColor));
-        document.documentElement.style.setProperty('--strong-outline-rgb', hexToRgb(outlineColor));
         document.documentElement.style.setProperty('--strong-text-opacity', textOpacity);
-        document.documentElement.style.setProperty('--strong-outline-opacity', outlineOpacity); // 影の透過率をCSS変数として設定
+        
+        // 縁取り用のCSS変数を更新 (SVG操作を削除)
+        document.documentElement.style.setProperty('--strong-outline-width', `${outlineWidth}px`);
+        document.documentElement.style.setProperty('--strong-outline-rgb', hexToRgb(outlineColor));
         
         saveSettings();
     }
@@ -227,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const outlineColor = normalOutlineColorInput.value;
         const outlineWidth = parseFloat(normalOutlineWidthInput.value);
         const textOpacity = parseFloat(normalTextOpacityInput.value) / 100;
-        const outlineOpacity = textOpacity / 1; // 影の透過率を計算
 
         normalFontSizeValue.textContent = fontSize;
         normalFontWeightValue.textContent = fontWeight;
@@ -235,17 +243,20 @@ document.addEventListener('DOMContentLoaded', () => {
         normalOutlineWidthValue.textContent = outlineWidth.toFixed(1);
         normalTextOpacityValue.textContent = Math.round(textOpacity * 100);
         
+        // CSS変数の更新
         document.documentElement.style.setProperty('--normal-font-size', `${fontSize}%`);
         document.documentElement.style.setProperty('--normal-font-weight', fontWeight);
         document.documentElement.style.setProperty('--normal-line-height', lineHeight);
-        document.documentElement.style.setProperty('--normal-outline-width', `${outlineWidth}px`);
         document.documentElement.style.setProperty('--normal-text-rgb', hexToRgb(textColor));
-        document.documentElement.style.setProperty('--normal-outline-rgb', hexToRgb(outlineColor));
         document.documentElement.style.setProperty('--normal-text-opacity', textOpacity);
-        document.documentElement.style.setProperty('--normal-outline-opacity', outlineOpacity); // 影の透過率をCSS変数として設定
+        
+        // 縁取り用のCSS変数を更新 (SVG操作を削除)
+        document.documentElement.style.setProperty('--normal-outline-width', `${outlineWidth}px`);
+        document.documentElement.style.setProperty('--normal-outline-rgb', hexToRgb(outlineColor));
 
         saveSettings();
     }
+    // ▲▲▲ ここまで変更 ▲▲▲
 
     function updateChatWindowOpacity() {
         const opacity = parseInt(chatOpacityInput.value) / 100;
@@ -254,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveSettings();
     }
 
+    // (中略: saveSettings, restoreSettings, setDefaultSettings, setTimeout内の処理は変更なし)
     function saveSettings() {
         const settings = {
             strongFontSize: parseInt(strongFontSizeInput.value),
