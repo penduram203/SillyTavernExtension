@@ -96,6 +96,19 @@
     transition: background-color 0.3s, opacity 0.3s;
 }
 
+#reset-button, 
+#maximize-button, 
+#minimize-button {
+    padding: 5px 10px;
+    cursor: pointer;
+    background-color: #555;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    opacity: 0.5;
+    transition: background-color 0.3s, opacity 0.3s;
+}
+
 #reset-button:hover, 
 #maximize-button:hover, 
 #minimize-button:hover {
