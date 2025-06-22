@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isResizing = false;
     let offsetX, offsetY;
 
+    // 各キャラクターの最後の画像URLを保存するオブジェクト
+    let characterLastImages = {};
+
     // コンテナ作成
     const imageContainer = document.createElement('div');
     imageContainer.id = 'image-display-container';
@@ -326,34 +329,120 @@ document.addEventListener('DOMContentLoaded', async () => {
             const response = await fetch(`scripts/extensions/image_display_extension/character_image_mapping/${characterName}.json`);
             
             if (!response.ok) {
-                console.warn(`キャラクター専用マッピングファイルが見つかりません: ${characterName}.json`);
+                console.warn(`⚠️ キャラクター専用マッピングファイルが見つかりません: ${characterName}.json`);
                 return defaultImageMap;
             }
             
             const customMap = await response.json();
-            console.log(`キャラクター専用マッピングを読み込みました: ${characterName}`, customMap);
+            console.log(`✅ キャラクター専用マッピングを読み込みました: ${characterName}`);
             return customMap;
         } catch (error) {
-            console.error(`マッピングファイルの読み込みエラー (${characterName}):`, error);
+            console.error(`❌ マッピングファイルの読み込みエラー (${characterName}):`, error);
             return defaultImageMap;
         }
+    }
+
+    // キャラクターの最後の画像を保存
+    function saveCharacterLastImage(character, imageUrl) {
+        if (!character) return;
+        
+        // localStorageから既存のデータを読み込む
+        const savedData = localStorage.getItem('characterLastImages');
+        let characterLastImages = savedData ? JSON.parse(savedData) : {};
+        
+        // 新しいデータを更新
+        characterLastImages[character] = imageUrl;
+        
+        // localStorageに保存
+        localStorage.setItem('characterLastImages', JSON.stringify(characterLastImages));
+        console.log(`💾 キャラクターの最後の画像を保存: ${character} -> ${imageUrl}`);
+    }
+
+    // キャラクターの最後の画像を取得
+    function getCharacterLastImage(character) {
+        if (!character) return null;
+        
+        // localStorageからデータを読み込む
+        const savedData = localStorage.getItem('characterLastImages');
+        if (!savedData) return null;
+        
+        const characterLastImages = JSON.parse(savedData);
+        return characterLastImages[character] || null;
+    }
+
+    // チャット履歴をスキャンして最後のキーワードを特定
+    function findLastKeywordImage() {
+        if (!currentCharacter) return null;
+        
+        // すべてのユーザーメッセージを取得（is_user="true"）
+        const userMessages = document.querySelectorAll('.mes[is_user="true"]');
+        let lastImageUrl = null;
+        let maxMesId = -1;
+        
+        // メッセージを逆順に処理（最新のメッセージから）
+        for (let i = userMessages.length - 1; i >= 0; i--) {
+            const message = userMessages[i];
+            const mesId = parseInt(message.getAttribute('mesid'));
+            
+            // 既に最新のメッセージを見つけた場合は終了
+            if (mesId < maxMesId) break;
+            
+            const textElement = message.querySelector('.mes_text');
+            if (textElement) {
+                const messageText = textElement.textContent;
+                const imageUrl = checkKeywords(messageText);
+                
+                if (imageUrl) {
+                    lastImageUrl = imageUrl;
+                    maxMesId = mesId;
+                    // 最新のメッセージが見つかったらループ終了
+                    break;
+                }
+            }
+        }
+        
+        return lastImageUrl;
     }
 
     // キャラクター名変更時の処理
     async function handleCharacterChange(newCharacter) {
         if (newCharacter === currentCharacter) return;
         
-        console.log(`キャラクター変更を検出: ${newCharacter}`);
+        console.log(`🔍 キャラクター変更を検出: ${newCharacter}`);
         currentCharacter = newCharacter;
         
-        // 新しいマッピングを読み込み
-        currentImageMap = await loadCharacterImageMap(currentCharacter);
+        try {
+            // 新しいマッピングを読み込み
+            currentImageMap = await loadCharacterImageMap(currentCharacter);
+        } catch (e) {
+            console.error(`❌ マッピング読み込みエラー: ${e.message}`);
+            currentImageMap = defaultImageMap;
+        }
         
-        // 画像をデフォルトにリセット
-        imgElement.src = currentImageMap.default;
-        currentImageUrl = currentImageMap.default;
+        // キャラクターの最後の画像を取得
+        let lastImageUrl = getCharacterLastImage(currentCharacter);
         
-        console.log(`画像をデフォルトにリセット: ${currentImageMap.default}`);
+        if (!lastImageUrl) {
+            console.warn(`⚠️ キャラクター ${currentCharacter} に対応するlast_imageが存在しません`);
+        }
+        
+        // チャット履歴から最後のキーワードを検索
+        try {
+            const foundImageUrl = findLastKeywordImage();
+            if (foundImageUrl) {
+                lastImageUrl = foundImageUrl;
+                console.log(`🔍 チャット履歴から画像を検出: ${lastImageUrl}`);
+            }
+        } catch (e) {
+            console.error(`❌ 履歴スキャンエラー: ${e.message}`);
+        }
+        
+        // 画像を設定（最後の画像かデフォルト）
+        const newUrl = lastImageUrl || currentImageMap.default;
+        imgElement.src = newUrl;
+        currentImageUrl = newUrl;
+        
+        console.log(`🖼️ 画像を設定: ${newUrl}`);
     }
 
     // キャラクター名取得関数
@@ -368,7 +457,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         
-        console.warn('キャラクター要素が見つかりません');
+        console.warn('⚠️ キャラクター要素が見つかりません');
         return null;
     }
 
@@ -376,7 +465,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function setupChatObserver() {
         const chatContainer = document.getElementById('chat');
         if (!chatContainer) {
-            console.error('チャットコンテナ(#chat)が見つかりません');
+            console.error('❌ チャットコンテナ(#chat)が見つかりません');
             return;
         }
 
@@ -386,7 +475,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         chatObserver = new MutationObserver((mutations) => {
-            let shouldUpdate = false;
+            let shouldUpdateCharacter = false;
+            let shouldCheckKeyword = false;
             
             mutations.forEach((mutation) => {
                 if (mutation.addedNodes.length > 0) {
@@ -399,20 +489,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                             // コンソールにログ出力
                             if (node.querySelector('.mes_text')) {
                                 const messageText = node.querySelector('.mes_text').textContent;
-                                console.log("新しいメッセージを検出:", messageText);
+                                const isUser = node.getAttribute('is_user') === "true";
                                 
-                                // キーワードに基づく画像更新
-                                const newImageUrl = checkKeywords(messageText);
-                                if (newImageUrl && newImageUrl !== currentImageUrl) {
-                                    imgElement.src = newImageUrl;
-                                    currentImageUrl = newImageUrl;
+                                // ユーザーメッセージの場合のみキーワードチェック
+                                if (isUser) {
+                                    console.log("💬 新しいユーザーメッセージを検出:", messageText);
+                                    const newImageUrl = checkKeywords(messageText);
+                                    
+                                    if (newImageUrl && newImageUrl !== currentImageUrl) {
+                                        imgElement.src = newImageUrl;
+                                        currentImageUrl = newImageUrl;
+                                        
+                                        // キャラクターの最後の画像を保存
+                                        if (currentCharacter) {
+                                            saveCharacterLastImage(currentCharacter, newImageUrl);
+                                        }
+                                    }
+                                    
+                                    shouldCheckKeyword = true;
                                 }
                             }
                             
                             // CHAT_CHANGED イベントを検出
                             if (node.getAttribute('mesid') === "0" && 
                                 node.getAttribute('is_user') === "false") {
-                                shouldUpdate = true;
+                                shouldUpdateCharacter = true;
                             }
                         }
                     });
@@ -420,13 +521,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             
             // CHAT_CHANGED 後にキャラクター名を更新
-            if (shouldUpdate) {
+            if (shouldUpdateCharacter) {
                 setTimeout(() => {
                     const newCharacter = detectCharacterName();
                     if (newCharacter) {
                         handleCharacterChange(newCharacter);
                     }
                 }, 500); // 少し遅延させて確実に取得
+            }
+            
+            // キーワードチェックが必要な場合
+            if (shouldCheckKeyword) {
+                setTimeout(() => {
+                    const lastImageUrl = findLastKeywordImage();
+                    if (lastImageUrl && lastImageUrl !== currentImageUrl) {
+                        imgElement.src = lastImageUrl;
+                        currentImageUrl = lastImageUrl;
+                        
+                        // キャラクターの最後の画像を保存
+                        if (currentCharacter) {
+                            saveCharacterLastImage(currentCharacter, lastImageUrl);
+                        }
+                    }
+                }, 300);
             }
         });
 
@@ -444,19 +561,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // コンソールログ監視（CHAT_CHANGED イベント検出）
+    // コンソールログ監視（スタックオーバーフロー防止）
     const originalConsoleLog = console.log;
-    console.log = function(message) {
+    console.log = function() {
+        // 元のconsole.logで出力
         originalConsoleLog.apply(console, arguments);
         
-        // CHAT_CHANGED を検出
-        if (typeof message === 'string' && message.includes('CHAT_CHANGED')) {
-            console.log('CHAT_CHANGED イベントを検出');
+        // 引数の最初の要素が文字列かどうかチェック
+        if (arguments.length > 0 && typeof arguments[0] === 'string') {
+            const message = arguments[0];
             
-            // 少し遅延させてからチャット監視を再設定
-            setTimeout(() => {
-                setupChatObserver();
-            }, 1000);
+            // CHAT_CHANGED を検出
+            if (message.includes('CHAT_CHANGED')) {
+                originalConsoleLog('🔔 CHAT_CHANGED イベントを検出');
+                setTimeout(() => {
+                    setupChatObserver();
+                }, 1000);
+            }
+            
+            // Generate entered を検出
+            if (message.includes('Generate entered')) {
+                originalConsoleLog('🔔 Generate entered イベントを検出');
+                setTimeout(() => {
+                    try {
+                        const lastImageUrl = findLastKeywordImage();
+                        if (lastImageUrl && lastImageUrl !== currentImageUrl) {
+                            imgElement.src = lastImageUrl;
+                            currentImageUrl = lastImageUrl;
+                            
+                            // キャラクターの最後の画像を保存
+                            if (currentCharacter) {
+                                saveCharacterLastImage(currentCharacter, lastImageUrl);
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`❌ Generate entered 処理エラー: ${e.message}`);
+                    }
+                }, 500);
+            }
         }
     };
 
