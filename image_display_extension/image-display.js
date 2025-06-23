@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentCharacter = null;
     let currentImageMap = defaultImageMap;
     let currentImageUrl = currentImageMap.default;
-    let currentMode = 'normal'; // 'normal'(カスタム), 'maximized', 'halfMaximized'
-    let preNormalState = { // カスタムモード（通常モード）の位置とサイズを保持
+    let currentMode = 'normal'; // 'normal'(カスタムモード), 'maximized', 'halfMaximized'
+    let preNormalState = {
         width: DEFAULT_WIDTH,
         height: DEFAULT_HEIGHT,
         left: DEFAULT_LEFT,
@@ -31,130 +31,165 @@ document.addEventListener('DOMContentLoaded', async () => {
     let offsetX, offsetY;
     let isCustomWindowOpen = false;
 
-    // --- DOM要素の作成 (変更なし) ---
+    // (UI要素の作成部分は変更なし)
     const detectionZone = document.createElement('div');
     detectionZone.id = 'mouse-detection-zone';
     document.body.appendChild(detectionZone);
-
     const imageContainer = document.createElement('div');
     imageContainer.id = 'image-display-container';
     document.body.appendChild(imageContainer);
-
     const header = document.createElement('div');
     header.id = 'image-display-header';
-    header.textContent = '画像表示エリア';
+    header.textContent = '画像表示エリア (ドラッグで移動)';
     imageContainer.appendChild(header);
-
     const colorPicker = document.createElement('input');
     colorPicker.type = 'color';
     colorPicker.id = 'bg-color-picker';
     colorPicker.value = DEFAULT_BG_COLOR;
     colorPicker.title = '背景色を変更';
     header.appendChild(colorPicker);
-
     const imgElement = document.createElement('img');
     imgElement.id = 'displayed-image';
     imgElement.src = currentImageMap.default;
     imageContainer.appendChild(imgElement);
-
     const resizeHandle = document.createElement('div');
     resizeHandle.id = 'resize-handle';
     imageContainer.appendChild(resizeHandle);
-
     const controlContainer = document.createElement('div');
     controlContainer.id = 'image-control-container';
     document.body.appendChild(controlContainer);
-
     const customButton = document.createElement('button');
     customButton.id = 'custom-button';
     customButton.textContent = 'カスタム';
-    customButton.title = 'カスタムモードに切り替え、設定を開く';
+    customButton.title = 'カスタムモードに切り替え / 設定を開く';
+    customButton.classList.add('enabled');
     controlContainer.appendChild(customButton);
-
     const maximizeButton = document.createElement('button');
     maximizeButton.id = 'maximize-button';
     maximizeButton.textContent = '最大化';
     maximizeButton.title = '画像表示エリアを最大化';
+    maximizeButton.classList.add('enabled');
     controlContainer.appendChild(maximizeButton);
-
     const halfMaximizeButton = document.createElement('button');
     halfMaximizeButton.id = 'half-maximize-button';
     halfMaximizeButton.textContent = '左半分';
     halfMaximizeButton.title = '画像表示エリアを左半分に最大化';
+    halfMaximizeButton.classList.add('enabled');
     controlContainer.appendChild(halfMaximizeButton);
-
     const customWindow = document.createElement('div');
     customWindow.id = 'custom-window';
     document.body.appendChild(customWindow);
-    customWindow.innerHTML = `
-        <h3>カスタム設定 <button class="close-button" title="閉じる">×</button></h3>
-        <div style="clear: both;"></div>
-        <label for="custom-x">X座標 (px)</label>
-        <input type="number" id="custom-x">
-        <label for="custom-y">Y座標 (px)</label>
-        <input type="number" id="custom-y">
-        <label for="custom-width">幅 (px)</label>
-        <input type="number" id="custom-width">
-        <label for="custom-height">高さ (px)</label>
-        <input type="number" id="custom-height">
-    `;
-    const closeButton = customWindow.querySelector('.close-button');
-    const xInput = customWindow.querySelector('#custom-x');
-    const yInput = customWindow.querySelector('#custom-y');
-    const widthInput = customWindow.querySelector('#custom-width');
-    const heightInput = customWindow.querySelector('#custom-height');
+    const customWindowTitle = document.createElement('h3');
+    customWindowTitle.textContent = 'カスタム設定';
+    customWindow.appendChild(customWindowTitle);
+    const closeButton = document.createElement('button');
+    closeButton.className = 'close-button';
+    closeButton.textContent = '×';
+    closeButton.title = '閉じる';
+    customWindow.appendChild(closeButton);
+    const clearDiv = document.createElement('div');
+    clearDiv.style.clear = 'both';
+    customWindow.appendChild(clearDiv);
+    const xLabel = document.createElement('label');
+    xLabel.htmlFor = 'custom-x';
+    xLabel.textContent = 'X座標 (px)';
+    customWindow.appendChild(xLabel);
+    const xInput = document.createElement('input');
+    xInput.type = 'number';
+    xInput.id = 'custom-x';
+    customWindow.appendChild(xInput);
+    const yLabel = document.createElement('label');
+    yLabel.htmlFor = 'custom-y';
+    yLabel.textContent = 'Y座標 (px)';
+    customWindow.appendChild(yLabel);
+    const yInput = document.createElement('input');
+    yInput.type = 'number';
+    yInput.id = 'custom-y';
+    customWindow.appendChild(yInput);
+    const widthLabel = document.createElement('label');
+    widthLabel.htmlFor = 'custom-width';
+    widthLabel.textContent = '幅 (px)';
+    customWindow.appendChild(widthLabel);
+    const widthInput = document.createElement('input');
+    widthInput.type = 'number';
+    widthInput.id = 'custom-width';
+    customWindow.appendChild(widthInput);
+    const heightLabel = document.createElement('label');
+    heightLabel.htmlFor = 'custom-height';
+    heightLabel.textContent = '高さ (px)';
+    customWindow.appendChild(heightLabel);
+    const heightInput = document.createElement('input');
+    heightInput.type = 'number';
+    heightInput.id = 'custom-height';
+    customWindow.appendChild(heightInput);
 
-    // --- イベントリスナー (マウス検出、カスタムウィンドウ) ---
+    // (マウス検出ゾーンのイベントリスナーは変更なし)
     detectionZone.addEventListener('mouseenter', () => { controlContainer.style.display = 'flex'; });
     controlContainer.addEventListener('mouseenter', () => { controlContainer.style.display = 'flex'; });
     detectionZone.addEventListener('mouseleave', (e) => { if (!controlContainer.contains(e.relatedTarget)) { controlContainer.style.display = 'none'; } });
     controlContainer.addEventListener('mouseleave', (e) => { if (!detectionZone.contains(e.relatedTarget)) { controlContainer.style.display = 'none'; } });
 
+    // (カスタム設定ウィンドウの更新・入力イベントは変更なし)
     function updateCustomWindow() {
-        xInput.value = preNormalState.left;
-        yInput.value = preNormalState.top;
-        widthInput.value = preNormalState.width;
-        heightInput.value = preNormalState.height;
+        xInput.value = parseInt(imageContainer.style.left) || DEFAULT_LEFT;
+        yInput.value = parseInt(imageContainer.style.top) || DEFAULT_TOP;
+        widthInput.value = imageContainer.offsetWidth;
+        heightInput.value = imageContainer.offsetHeight;
     }
-
     function handleCustomInput() {
-        const newValues = {
-            left: parseInt(xInput.value) || 0,
-            top: parseInt(yInput.value) || 0,
-            width: parseInt(widthInput.value) || DEFAULT_WIDTH,
-            height: parseInt(heightInput.value) || DEFAULT_HEIGHT
-        };
-        imageContainer.style.left = `${newValues.left}px`;
-        imageContainer.style.top = `${newValues.top}px`;
-        imageContainer.style.width = `${newValues.width}px`;
-        imageContainer.style.height = `${newValues.height}px`;
-        preNormalState = newValues;
-        saveDisplayState();
+        if (currentMode === 'normal') {
+            imageContainer.style.left = `${xInput.value}px`;
+            imageContainer.style.top = `${yInput.value}px`;
+            imageContainer.style.width = `${widthInput.value}px`;
+            imageContainer.style.height = `${heightInput.value}px`;
+            saveDisplayState();
+        }
     }
     xInput.addEventListener('input', handleCustomInput);
     yInput.addEventListener('input', handleCustomInput);
     widthInput.addEventListener('input', handleCustomInput);
     heightInput.addEventListener('input', handleCustomInput);
 
+    // カスタムウィンドウの開閉
     function toggleCustomWindow() {
         isCustomWindowOpen = !isCustomWindowOpen;
-        customWindow.style.display = isCustomWindowOpen ? 'block' : 'none';
-        if (isCustomWindowOpen) updateCustomWindow();
+        if (isCustomWindowOpen) {
+            customWindow.style.display = 'block';
+            updateCustomWindow();
+        } else {
+            customWindow.style.display = 'none';
+        }
     }
     
-    // [新設] カスタムウィンドウを閉じる専用の関数
+    // 【★★★ 修正点 ★★★】
+    // カスタムウィンドウを強制的に閉じる関数を追加
     function closeCustomWindow() {
         if (isCustomWindowOpen) {
-            customWindow.style.display = 'none';
             isCustomWindowOpen = false;
+            customWindow.style.display = 'none';
         }
     }
 
-    closeButton.addEventListener('click', toggleCustomWindow); // 閉じるボタンはトグル動作でOK
-    
-    // --- 状態管理とモード切替 ---
+    closeButton.addEventListener('click', toggleCustomWindow);
 
+    customButton.addEventListener('click', () => {
+        if (currentMode !== 'normal') {
+            applyNormalMode();
+            saveDisplayState();
+        }
+        toggleCustomWindow();
+    });
+
+    // (状態保存・復元、モード変更関数は変更なし)
     function saveDisplayState() {
+        if (currentMode === 'normal') {
+            preNormalState = {
+                width: imageContainer.offsetWidth,
+                height: imageContainer.offsetHeight,
+                left: parseInt(imageContainer.style.left) || DEFAULT_LEFT,
+                top: parseInt(imageContainer.style.top) || DEFAULT_TOP
+            };
+        }
         const state = {
             bgColor: colorPicker.value,
             currentMode: currentMode,
@@ -162,62 +197,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
         localStorage.setItem('imageDisplayState', JSON.stringify(state));
     }
-
-    function updateUiAndBehaviors() {
-        [customButton, maximizeButton, halfMaximizeButton].forEach(btn => {
-            btn.disabled = false;
-            btn.classList.remove('disabled');
-            btn.classList.add('enabled');
-        });
-
-        if (currentMode === 'normal') {
-            header.style.cursor = 'grab';
-            resizeHandle.style.display = 'block';
-            imageContainer.classList.remove('half-maximized');
-        } else {
-            header.style.cursor = 'default';
-            resizeHandle.style.display = 'none';
-            if (currentMode === 'maximized') {
-                maximizeButton.disabled = true;
-                maximizeButton.classList.add('disabled');
-            } else if (currentMode === 'halfMaximized') {
-                halfMaximizeButton.disabled = true;
-                halfMaximizeButton.classList.add('disabled');
-                imageContainer.classList.add('half-maximized');
-            }
-        }
-    }
-
-    function applyNormalMode() {
-        currentMode = 'normal';
-        imageContainer.style.position = 'absolute';
-        imageContainer.style.width = `${preNormalState.width}px`;
-        imageContainer.style.height = `${preNormalState.height}px`;
-        imageContainer.style.left = `${preNormalState.left}px`;
-        imageContainer.style.top = `${preNormalState.top}px`;
-        updateUiAndBehaviors();
-    }
-
-    function applyMaximizeMode() {
-        currentMode = 'maximized';
-        imageContainer.style.position = 'fixed';
-        imageContainer.style.width = '100vw';
-        imageContainer.style.height = '100vh';
-        imageContainer.style.left = '0';
-        imageContainer.style.top = '0';
-        updateUiAndBehaviors();
-    }
-
-    function applyHalfMaximizeMode() {
-        currentMode = 'halfMaximized';
-        imageContainer.style.position = 'fixed';
-        imageContainer.style.width = '50vw';
-        imageContainer.style.height = '100vh';
-        imageContainer.style.left = '0';
-        imageContainer.style.top = '0';
-        updateUiAndBehaviors();
-    }
-
     function restoreDisplayState() {
         const savedState = localStorage.getItem('imageDisplayState');
         if (savedState) {
@@ -228,11 +207,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     imageContainer.style.backgroundColor = state.bgColor;
                     colorPicker.value = state.bgColor;
                 }
-                
-                switch (state.currentMode) {
+                currentMode = state.currentMode || 'normal';
+                switch (currentMode) {
                     case 'maximized': applyMaximizeMode(); break;
                     case 'halfMaximized': applyHalfMaximizeMode(); break;
-                    case 'normal': default: applyNormalMode(); break;
+                    default: applyNormalMode(); break;
                 }
             } catch (e) {
                 console.error('状態復元エラー:', e);
@@ -242,43 +221,130 @@ document.addEventListener('DOMContentLoaded', async () => {
             setDefaultDisplayState();
         }
     }
-    
     function setDefaultDisplayState() {
         preNormalState = { width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT, left: DEFAULT_LEFT, top: DEFAULT_TOP };
         imageContainer.style.backgroundColor = DEFAULT_BG_COLOR;
         colorPicker.value = DEFAULT_BG_COLOR;
         applyNormalMode();
     }
-
+    function applyNormalMode() {
+        imageContainer.style.width = `${preNormalState.width}px`;
+        imageContainer.style.height = `${preNormalState.height}px`;
+        imageContainer.style.left = `${preNormalState.left}px`;
+        imageContainer.style.top = `${preNormalState.top}px`;
+        imageContainer.style.position = 'absolute';
+        resizeHandle.style.display = 'block';
+        header.style.cursor = 'grab';
+        imageContainer.classList.remove('half-maximized');
+        maximizeButton.classList.remove('disabled');
+        maximizeButton.classList.add('enabled');
+        halfMaximizeButton.classList.remove('disabled');
+        halfMaximizeButton.classList.add('enabled');
+        currentMode = 'normal';
+    }
+    function applyMaximizeMode() {
+        if (currentMode === 'normal') {
+            preNormalState = { width: imageContainer.offsetWidth, height: imageContainer.offsetHeight, left: parseInt(imageContainer.style.left), top: parseInt(imageContainer.style.top) };
+        }
+        imageContainer.style.width = '100%';
+        imageContainer.style.height = '100%';
+        imageContainer.style.left = '0';
+        imageContainer.style.top = '0';
+        imageContainer.style.position = 'fixed';
+        resizeHandle.style.display = 'none';
+        header.style.cursor = 'default';
+        imageContainer.classList.remove('half-maximized');
+        maximizeButton.classList.remove('enabled');
+        maximizeButton.classList.add('disabled');
+        halfMaximizeButton.classList.remove('disabled');
+        halfMaximizeButton.classList.add('enabled');
+        currentMode = 'maximized';
+    }
+    function applyHalfMaximizeMode() {
+        if (currentMode === 'normal') {
+            preNormalState = { width: imageContainer.offsetWidth, height: imageContainer.offsetHeight, left: parseInt(imageContainer.style.left), top: parseInt(imageContainer.style.top) };
+        }
+        imageContainer.style.width = '50vw';
+        imageContainer.style.height = '100vh';
+        imageContainer.style.left = '0';
+        imageContainer.style.top = '0';
+        imageContainer.style.position = 'fixed';
+        resizeHandle.style.display = 'none';
+        header.style.cursor = 'default';
+        imageContainer.classList.add('half-maximized');
+        maximizeButton.classList.remove('disabled');
+        maximizeButton.classList.add('enabled');
+        halfMaximizeButton.classList.remove('enabled');
+        halfMaximizeButton.classList.add('disabled');
+        currentMode = 'halfMaximized';
+    }
+    
+    // 初期化時に状態復元
     restoreDisplayState();
 
-    // --- コントロールボタンのイベントリスナー ---
-    customButton.addEventListener('click', () => {
-        applyNormalMode();
-        saveDisplayState();
-        toggleCustomWindow();
-    });
-
-    maximizeButton.addEventListener('click', () => {
-        if (currentMode === 'maximized') return;
-        applyMaximizeMode();
-        saveDisplayState();
-        closeCustomWindow(); // [修正] ウィンドウを閉じる
-    });
-    
-    halfMaximizeButton.addEventListener('click', () => {
-        if (currentMode === 'halfMaximized') return;
-        applyHalfMaximizeMode();
-        saveDisplayState();
-        closeCustomWindow(); // [修正] ウィンドウを閉じる
-    });
-
+    // 背景色変更イベント
     colorPicker.addEventListener('input', () => {
         imageContainer.style.backgroundColor = colorPicker.value;
         saveDisplayState();
     });
 
-    // --- ドラッグ＆リサイズ機能 (カスタムモード限定) ---
+    // 【★★★ 修正点 ★★★】
+    // 最大化ボタンのクリックイベントにウィンドウを閉じる処理を追加
+    maximizeButton.addEventListener('click', () => {
+        if (currentMode === 'maximized') return;
+        closeCustomWindow(); // ウィンドウを閉じる
+        applyMaximizeMode();
+        saveDisplayState();
+    });
+    
+    // 【★★★ 修正点 ★★★】
+    // 左半分ボタンのクリックイベントにウィンドウを閉じる処理を追加
+    halfMaximizeButton.addEventListener('click', () => {
+        if (currentMode === 'halfMaximized') return;
+        closeCustomWindow(); // ウィンドウを閉じる
+        applyHalfMaximizeMode();
+        saveDisplayState();
+    });
+
+    // (ドラッグ/リサイズ、キーワード検出、画像処理などの機能は変更なし)
+    document.addEventListener('mouseup', () => {
+        if ((isDragging || isResizing) && currentMode === 'normal') {
+            setTimeout(() => {
+                saveDisplayState();
+                if (isCustomWindowOpen) updateCustomWindow();
+            }, 50);
+        }
+    });
+    window.addEventListener('resize', () => {
+        if (currentMode === 'maximized') {
+            imageContainer.style.width = '100%';
+            imageContainer.style.height = '100%';
+        } else if (currentMode === 'halfMaximized') {
+            imageContainer.style.width = '50vw';
+            imageContainer.style.height = '100vh';
+        }
+    });
+    function checkKeywords(text) {
+        const keywordGroups = Object.entries(currentImageMap)
+            .filter(([key]) => key !== "default")
+            .map(([keys, url]) => ({
+                keys: keys.split('|'),
+                url
+            }));
+        for (const group of keywordGroups) {
+            for (const keyword of group.keys) {
+                try {
+                    const regex = new RegExp(keyword);
+                    if (regex.test(text)) return group.url;
+                } catch(e) { console.error(`無効な正規表現パターン: ${keyword}`); }
+            }
+        }
+        return null;
+    }
+    imgElement.onerror = function() {
+        console.error("画像の読み込みに失敗しました:", this.src);
+        this.src = currentImageMap.default;
+    };
     header.addEventListener('mousedown', (e) => {
         if (e.target === colorPicker || currentMode !== 'normal') return;
         isDragging = true;
@@ -288,25 +354,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         header.style.cursor = 'grabbing';
         e.preventDefault();
     });
-
     document.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        imageContainer.style.left = `${e.clientX - offsetX}px`;
-        imageContainer.style.top = `${e.clientY - offsetY}px`;
+        if (isDragging && currentMode === 'normal') {
+            imageContainer.style.left = `${e.clientX - offsetX}px`;
+            imageContainer.style.top = `${e.clientY - offsetY}px`;
+            if (isCustomWindowOpen) updateCustomWindow();
+        }
     });
-
     document.addEventListener('mouseup', () => {
         if (isDragging) {
             isDragging = false;
             imageContainer.classList.remove('dragging');
-            header.style.cursor = 'grab';
-            preNormalState.left = parseInt(imageContainer.style.left);
-            preNormalState.top = parseInt(imageContainer.style.top);
-            saveDisplayState();
-            if (isCustomWindowOpen) updateCustomWindow();
+            if(currentMode === 'normal') header.style.cursor = 'grab';
         }
     });
-
     resizeHandle.addEventListener('mousedown', (e) => {
         if (currentMode !== 'normal') return;
         e.stopPropagation();
@@ -316,34 +377,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         const startY = e.clientY;
         const startWidth = imageContainer.offsetWidth;
         const startHeight = imageContainer.offsetHeight;
-
         function handleResize(e) {
-            if (!isResizing) return;
-            const newWidth = Math.max(100, startWidth + (e.clientX - startX));
-            const newHeight = Math.max(100, startHeight + (e.clientY - startY));
-            imageContainer.style.width = `${newWidth}px`;
-            imageContainer.style.height = `${newHeight}px`;
+            if (isResizing) {
+                const newWidth = Math.max(100, startWidth + (e.clientX - startX));
+                const newHeight = Math.max(100, startHeight + (e.clientY - startY));
+                imageContainer.style.width = `${newWidth}px`;
+                imageContainer.style.height = `${newHeight}px`;
+                if (isCustomWindowOpen) updateCustomWindow();
+            }
         }
-
         function stopResize() {
-            if (!isResizing) return;
             isResizing = false;
             imageContainer.classList.remove('resizing');
             document.removeEventListener('mousemove', handleResize);
             document.removeEventListener('mouseup', stopResize);
-            preNormalState.width = imageContainer.offsetWidth;
-            preNormalState.height = imageContainer.offsetHeight;
-            saveDisplayState();
-            if (isCustomWindowOpen) updateCustomWindow();
         }
-
         document.addEventListener('mousemove', handleResize);
         document.addEventListener('mouseup', stopResize);
     });
 
-    // --- 以下、キャラクターとチャット監視の機能 (変更なし) ---
-    // ... (元のコードをそのままコピー) ...
-
+    // (キャラクター関連の機能は一切変更ありません)
     async function loadCharacterImageMap(characterName) {
         if (!characterName) return defaultImageMap;
         try {
@@ -360,7 +413,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return defaultImageMap;
         }
     }
-
     function saveCharacterLastImage(character, imageUrl) {
         if (!character) return;
         const savedData = localStorage.getItem('characterLastImages');
@@ -369,7 +421,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.setItem('characterLastImages', JSON.stringify(characterLastImages));
         console.log(`💾 キャラクターの最後の画像を保存: ${character} -> ${imageUrl}`);
     }
-
     function getCharacterLastImage(character) {
         if (!character) return null;
         const savedData = localStorage.getItem('characterLastImages');
@@ -377,7 +428,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const characterLastImages = JSON.parse(savedData);
         return characterLastImages[character] || null;
     }
-
     function findLastKeywordImage() {
         if (!currentCharacter) return null;
         const userMessages = Array.from(document.querySelectorAll('.mes[is_user="true"]'));
@@ -389,82 +439,108 @@ document.addEventListener('DOMContentLoaded', async () => {
         for (const message of userMessages) {
             const textElement = message.querySelector('.mes_text');
             if (textElement) {
-                const keywordGroups = Object.entries(currentImageMap).filter(([key]) => key !== "default").map(([keys, url]) => ({ keys: keys.split('|'), url }));
-                for (const group of keywordGroups) {
-                    for (const keyword of group.keys) {
-                        if (new RegExp(keyword).test(textElement.textContent)) return group.url;
-                    }
-                }
+                const messageText = textElement.textContent;
+                const imageUrl = checkKeywords(messageText);
+                if (imageUrl) return imageUrl;
             }
         }
         return null;
     }
-    
-    imgElement.onerror = function() {
-        console.error("画像の読み込みに失敗しました:", this.src);
-        this.src = currentImageMap.default;
-    };
-
     async function handleCharacterChange(newCharacter) {
         if (newCharacter === currentCharacter) return;
-        
         console.log(`🔍 キャラクター変更を検出: ${newCharacter}`);
         currentCharacter = newCharacter;
-        
         try {
             currentImageMap = await loadCharacterImageMap(currentCharacter);
         } catch (e) {
             console.error(`❌ マッピング読み込みエラー: ${e.message}`);
             currentImageMap = defaultImageMap;
         }
-        
-        let lastImageUrl = getCharacterLastImage(currentCharacter) || findLastKeywordImage();
-        const newUrl = lastImageUrl || currentImageMap.default;
-        
-        if (newUrl !== currentImageUrl) {
-            imgElement.src = newUrl;
-            currentImageUrl = newUrl;
+        let lastImageUrl = getCharacterLastImage(currentCharacter);
+        if (!lastImageUrl) {
+            console.warn(`⚠️ キャラクター ${currentCharacter} に対応するlast_imageが存在しません`);
         }
-        
-        if (currentCharacter && newUrl) saveCharacterLastImage(currentCharacter, newUrl);
+        try {
+            const foundImageUrl = findLastKeywordImage();
+            if (foundImageUrl) {
+                lastImageUrl = foundImageUrl;
+                console.log(`🔍 チャット履歴から画像を検出: ${lastImageUrl}`);
+            } else {
+                console.log(`🔍 キーワードに一致するメッセージが見つかりません`);
+            }
+        } catch (e) {
+            console.error(`❌ 履歴スキャンエラー: ${e.message}`);
+        }
+        const newUrl = lastImageUrl || currentImageMap.default;
+        imgElement.src = newUrl;
+        currentImageUrl = newUrl;
+        if (currentCharacter && lastImageUrl) {
+            saveCharacterLastImage(currentCharacter, lastImageUrl);
+        }
         console.log(`🖼️ 画像を設定: ${newUrl}`);
     }
-
     function detectCharacterName() {
         const characterElement = document.querySelector('.mes[mesid="0"][is_user="false"]');
-        if (characterElement) return characterElement.getAttribute('ch_name');
+        if (characterElement) {
+            const characterName = characterElement.getAttribute('ch_name');
+            if (characterName) return characterName;
+        }
+        console.warn('⚠️ キャラクター要素が見つかりません');
         return null;
     }
-
     function setupChatObserver() {
         const chatContainer = document.getElementById('chat');
-        if (!chatContainer) return;
+        if (!chatContainer) {
+            console.error('❌ チャットコンテナ(#chat)が見つかりません');
+            return;
+        }
         if (chatObserver) chatObserver.disconnect();
-
-        chatObserver = new MutationObserver(() => {
-            const lastImageUrl = findLastKeywordImage() || currentImageMap.default;
-            if (lastImageUrl && lastImageUrl !== currentImageUrl) {
-                imgElement.src = lastImageUrl;
-                currentImageUrl = lastImageUrl;
-                if (currentCharacter) saveCharacterLastImage(currentCharacter, lastImageUrl);
+        chatObserver = new MutationObserver((mutations) => {
+            let shouldUpdateCharacter = false;
+            let shouldCheckKeyword = false;
+            for (const mutation of mutations) {
+                if (mutation.type === 'childList') {
+                    for (const node of mutation.addedNodes) {
+                        if (node.nodeType === 1 && node.matches && node.matches('.mes')) {
+                            if (node.getAttribute('is_user') === 'true') shouldCheckKeyword = true;
+                            else if (node.getAttribute('mesid') === '0') shouldUpdateCharacter = true;
+                        }
+                    }
+                    if (mutation.removedNodes.length > 0) shouldCheckKeyword = true;
+                }
+            }
+            if (shouldUpdateCharacter) {
+                setTimeout(() => {
+                    const newCharacter = detectCharacterName();
+                    if (newCharacter) handleCharacterChange(newCharacter);
+                }, 500);
+            }
+            if (shouldCheckKeyword) {
+                setTimeout(() => {
+                    try {
+                        const lastImageUrl = findLastKeywordImage();
+                        const targetUrl = lastImageUrl || currentImageMap.default;
+                        if (targetUrl !== currentImageUrl) {
+                            imgElement.src = targetUrl;
+                            currentImageUrl = targetUrl;
+                            if (currentCharacter) saveCharacterLastImage(currentCharacter, targetUrl);
+                        }
+                    } catch (e) { console.error(`❌ キーワードチェックエラー: ${e.message}`); }
+                }, 300);
             }
         });
-
         chatObserver.observe(chatContainer, { childList: true, subtree: true });
-    }
-
-    document.addEventListener('CHAT_CHANGED', () => {
-        console.log('🔔 CHAT_CHANGED イベントを検出');
-        setTimeout(() => {
-             const newCharacter = detectCharacterName();
-             if (newCharacter) handleCharacterChange(newCharacter);
-             setupChatObserver();
-        }, 500);
-    });
-
-    setTimeout(() => {
         const initialCharacter = detectCharacterName();
         if (initialCharacter) handleCharacterChange(initialCharacter);
-        setupChatObserver();
-    }, 1000);
+    }
+    document.addEventListener('chat_changed', () => {
+        console.log('🔔 chat_changed イベントを検出');
+        setTimeout(() => {
+            const newCharacter = detectCharacterName();
+            if (newCharacter) handleCharacterChange(newCharacter);
+        }, 1000);
+    });
+
+    // 初期設定
+    setupChatObserver();
 });
