@@ -136,8 +136,8 @@ button.enabled {
     position: fixed;
     left: 0;
     bottom: 0;
-    width: 250px;
-    height: 50px;
+    width: 321px;
+    height: 210px;
     z-index: 9999;
     background-color: transparent;
 }
