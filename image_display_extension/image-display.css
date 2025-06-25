@@ -79,7 +79,6 @@
     z-index: 10000;
     display: flex;
     gap: 5px;
-    display: none; /* 初期状態は非表示 */
 }
 
 /* コントロールボタン共通スタイル */
@@ -92,8 +91,8 @@
     color: white;
     border: none;
     border-radius: 3px;
-    opacity: 0.5;
-    transition: background-color 0.3s, opacity 0.3s;
+    opacity: 0.1;
+    transition: background-color 0.0s, opacity 0.0s;
 }
 
 #custom-button:hover, 
@@ -105,14 +104,14 @@
 
 /* 無効状態のボタンスタイル */
 button.disabled {
-    opacity: 0.3 !important;
+    opacity: 0.1 !important;
     cursor: not-allowed !important;
     background-color: #333 !important;
 }
 
 /* 有効状態のボタンスタイル */
 button.enabled {
-    opacity: 0.5;
+    opacity: 0.1;
     cursor: pointer;
 }
 
@@ -129,17 +128,6 @@ button.enabled {
 /* 左半分モード時の画像の右詰め */
 #image-display-container.half-maximized #displayed-image {
     object-position: right;
-}
-
-/* マウス検出ゾーン */
-#mouse-detection-zone {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 321px;
-    height: 210px;
-    z-index: 9999;
-    background-color: transparent;
 }
 
 /* カスタム設定ウィンドウ */
