@@ -25,7 +25,7 @@
 /* (中略: #text-styling-panel から .text-styling-value-display までは変更なし) */
 #text-styling-panel {
     position: fixed;
-    top: 250px;
+    top: 200px;
     left: 10px;
     width: 450px;
     min-height: 200px;
