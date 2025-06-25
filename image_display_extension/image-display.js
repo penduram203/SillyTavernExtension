@@ -31,10 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let offsetX, offsetY;
     let isCustomWindowOpen = false;
 
-    // (UI要素の作成部分は変更なし)
-    const detectionZone = document.createElement('div');
-    detectionZone.id = 'mouse-detection-zone';
-    document.body.appendChild(detectionZone);
+    // UI要素の作成
     const imageContainer = document.createElement('div');
     imageContainer.id = 'image-display-container';
     document.body.appendChild(imageContainer);
@@ -123,13 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     heightInput.id = 'custom-height';
     customWindow.appendChild(heightInput);
 
-    // (マウス検出ゾーンのイベントリスナーは変更なし)
-    detectionZone.addEventListener('mouseenter', () => { controlContainer.style.display = 'flex'; });
-    controlContainer.addEventListener('mouseenter', () => { controlContainer.style.display = 'flex'; });
-    detectionZone.addEventListener('mouseleave', (e) => { if (!controlContainer.contains(e.relatedTarget)) { controlContainer.style.display = 'none'; } });
-    controlContainer.addEventListener('mouseleave', (e) => { if (!detectionZone.contains(e.relatedTarget)) { controlContainer.style.display = 'none'; } });
-
-    // (カスタム設定ウィンドウの更新・入力イベントは変更なし)
+    // (カスタム設定ウィンドウの更新・入力イベント)
     function updateCustomWindow() {
         xInput.value = parseInt(imageContainer.style.left) || DEFAULT_LEFT;
         yInput.value = parseInt(imageContainer.style.top) || DEFAULT_TOP;
@@ -161,8 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // 【★★★ 修正点 ★★★】
-    // カスタムウィンドウを強制的に閉じる関数を追加
+    // カスタムウィンドウを強制的に閉じる関数
     function closeCustomWindow() {
         if (isCustomWindowOpen) {
             isCustomWindowOpen = false;
@@ -180,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         toggleCustomWindow();
     });
 
-    // (状態保存・復元、モード変更関数は変更なし)
+    // (状態保存・復元、モード変更関数)
     function saveDisplayState() {
         if (currentMode === 'normal') {
             preNormalState = {
@@ -288,8 +278,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveDisplayState();
     });
 
-    // 【★★★ 修正点 ★★★】
-    // 最大化ボタンのクリックイベントにウィンドウを閉じる処理を追加
+    // 最大化ボタンのクリックイベント
     maximizeButton.addEventListener('click', () => {
         if (currentMode === 'maximized') return;
         closeCustomWindow(); // ウィンドウを閉じる
@@ -297,8 +286,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveDisplayState();
     });
     
-    // 【★★★ 修正点 ★★★】
-    // 左半分ボタンのクリックイベントにウィンドウを閉じる処理を追加
+    // 左半分ボタンのクリックイベント
     halfMaximizeButton.addEventListener('click', () => {
         if (currentMode === 'halfMaximized') return;
         closeCustomWindow(); // ウィンドウを閉じる
@@ -306,7 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveDisplayState();
     });
 
-    // (ドラッグ/リサイズ、キーワード検出、画像処理などの機能は変更なし)
+    // (ドラッグ/リサイズ、キーワード検出、画像処理などの機能)
     document.addEventListener('mouseup', () => {
         if ((isDragging || isResizing) && currentMode === 'normal') {
             setTimeout(() => {
@@ -396,7 +384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.addEventListener('mouseup', stopResize);
     });
 
-    // (キャラクター関連の機能は一切変更ありません)
+    // (キャラクター関連の機能)
     async function loadCharacterImageMap(characterName) {
         if (!characterName) return defaultImageMap;
         try {
