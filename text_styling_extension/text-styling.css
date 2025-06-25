@@ -214,3 +214,10 @@
 #chat {
     background-color: rgba(var(--chat-bg-rgb), var(--chat-opacity)) !important;
 }
+
+#sheldheader {
+    font-size: 2em !important;
+    right: 50px; !important;
+    opacity: 1.0; !important;
+    background-color: #000000 !important;
+}
