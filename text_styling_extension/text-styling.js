@@ -1,14 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('テキストスタイル拡張機能: 初期化開始');
     
-    // ▼▼▼ 削除 ▼▼▼
-    // SVGフィルターをbodyに追加する関数 (createSvgFilters) 全体を削除
-    // ▲▲▲ 削除 ▲▲▲
-
-    // ▼▼▼ 削除 ▼▼▼
-    // createSvgFilters(); // 起動時のフィルター生成呼び出しを削除
-    // ▲▲▲ 削除 ▲▲▲
-
     const DEFAULTS = {
         strongFontSize: 200,
         strongFontWeight: 700,
@@ -33,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 0, 0';
     }
 
-    // (中略: パネルのHTML生成部分は変更なし)
     const panel = document.createElement('div');
     panel.id = 'text-styling-panel';
     document.body.appendChild(panel);
@@ -54,6 +45,33 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     document.body.appendChild(restoreButton);
+
+    // ▼▼▼ ここから追加 ▼▼▼
+    const windowControlContainer = document.createElement('div');
+    windowControlContainer.id = 'window-control-buttons';
+    document.body.appendChild(windowControlContainer);
+
+    // カスタムボタン
+    const customButton = document.createElement('button');
+    customButton.id = 'custom-button';
+    customButton.className = 'window-control-button';
+    customButton.textContent = 'カスタム';
+    windowControlContainer.appendChild(customButton);
+
+    // 中央ボタン
+    const centerButton = document.createElement('button');
+    centerButton.id = 'center-button';
+    centerButton.className = 'window-control-button';
+    centerButton.textContent = '中央';
+    windowControlContainer.appendChild(centerButton);
+
+    // 右半分ボタン
+    const rightHalfButton = document.createElement('button');
+    rightHalfButton.id = 'right-half-button';
+    rightHalfButton.className = 'window-control-button';
+    rightHalfButton.textContent = '右半分';
+    windowControlContainer.appendChild(rightHalfButton);
+    // ▲▲▲ ここまで追加 ▲▲▲
 
     const mainContainer = document.createElement('div');
     panel.appendChild(mainContainer);
@@ -198,7 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     chatOpacityInput.addEventListener('input', updateChatWindowOpacity);
 
-    // ▼▼▼ ここから変更 ▼▼▼
     function updateStrongStyle() {
         const fontSize = parseInt(strongFontSizeInput.value);
         const fontWeight = parseInt(strongFontWeightInput.value);
@@ -214,14 +231,11 @@ document.addEventListener('DOMContentLoaded', () => {
         strongOutlineWidthValue.textContent = outlineWidth.toFixed(1);
         strongTextOpacityValue.textContent = Math.round(textOpacity * 100);
         
-        // CSS変数の更新
         document.documentElement.style.setProperty('--strong-font-size', `${fontSize}%`);
         document.documentElement.style.setProperty('--strong-font-weight', fontWeight);
         document.documentElement.style.setProperty('--strong-line-height', lineHeight);
         document.documentElement.style.setProperty('--strong-text-rgb', hexToRgb(textColor));
         document.documentElement.style.setProperty('--strong-text-opacity', textOpacity);
-        
-        // 縁取り用のCSS変数を更新 (SVG操作を削除)
         document.documentElement.style.setProperty('--strong-outline-width', `${outlineWidth}px`);
         document.documentElement.style.setProperty('--strong-outline-rgb', hexToRgb(outlineColor));
         
@@ -243,20 +257,16 @@ document.addEventListener('DOMContentLoaded', () => {
         normalOutlineWidthValue.textContent = outlineWidth.toFixed(1);
         normalTextOpacityValue.textContent = Math.round(textOpacity * 100);
         
-        // CSS変数の更新
         document.documentElement.style.setProperty('--normal-font-size', `${fontSize}%`);
         document.documentElement.style.setProperty('--normal-font-weight', fontWeight);
         document.documentElement.style.setProperty('--normal-line-height', lineHeight);
         document.documentElement.style.setProperty('--normal-text-rgb', hexToRgb(textColor));
         document.documentElement.style.setProperty('--normal-text-opacity', textOpacity);
-        
-        // 縁取り用のCSS変数を更新 (SVG操作を削除)
         document.documentElement.style.setProperty('--normal-outline-width', `${outlineWidth}px`);
         document.documentElement.style.setProperty('--normal-outline-rgb', hexToRgb(outlineColor));
 
         saveSettings();
     }
-    // ▲▲▲ ここまで変更 ▲▲▲
 
     function updateChatWindowOpacity() {
         const opacity = parseInt(chatOpacityInput.value) / 100;
@@ -265,7 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
         saveSettings();
     }
 
-    // (中略: saveSettings, restoreSettings, setDefaultSettings, setTimeout内の処理は変更なし)
     function saveSettings() {
         const settings = {
             strongFontSize: parseInt(strongFontSizeInput.value),
@@ -370,6 +379,42 @@ document.addEventListener('DOMContentLoaded', () => {
             const chatBgColor = getComputedStyle(chatElement).backgroundColor;
             document.documentElement.style.setProperty('--chat-bg-rgb', hexToRgb(chatBgColor));
         }
+
+        // ▼▼▼ ここから追加 ▼▼▼
+        const sheld = document.getElementById('sheld');
+        const sheldheader = document.getElementById('sheldheader');
+
+        if (sheld && sheldheader) {
+            // カスタムボタンのクリックイベント
+            customButton.addEventListener('click', () => {
+                sheld.style.resize = 'both';
+                sheldheader.style.display = 'block';
+            });
+
+            // 中央ボタンのクリックイベント
+            centerButton.addEventListener('click', () => {
+                sheld.style.inset = '3.5vh 0px 60px 25vw';
+                sheld.style.height = '100vh';
+                sheld.style.width = '50vw';
+                sheld.style.margin = 'unset';
+                sheld.style.resize = 'none';
+                sheldheader.style.display = 'none';
+            });
+
+            // 右半分ボタンのクリックイベント
+            rightHalfButton.addEventListener('click', () => {
+                sheld.style.inset = '3.5vh 0px 60px 50vw';
+                sheld.style.height = '100vh';
+                sheld.style.width = '50vw';
+                sheld.style.margin = 'unset';
+                sheld.style.resize = 'none';
+                sheldheader.style.display = 'none';
+            });
+        } else {
+            console.error('チャットウィンドウの要素 (#sheld または #sheldheader) が見つかりませんでした。');
+        }
+        // ▲▲▲ ここまで追加 ▲▲▲
+        
         restoreSettings();
     }, 500);
 });
