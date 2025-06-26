@@ -1,6 +1,6 @@
 SillyTavernの拡張機能です
 
-①image-display
+①image-display<br>
 背景とは別に画像表示ウインドウを用意して、ウインドウ内の画像をキーワードに応じて自動的に切り替えます。
 
 ②chat-window-onoff
