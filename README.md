@@ -11,3 +11,5 @@ SillyTavernの拡張機能です
 
 ④text_styling_extension<br>
 文字のサイズや色を調整します
+
+https://files.catbox.moe/ar7sly.png
