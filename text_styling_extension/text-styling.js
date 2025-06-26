@@ -1,30 +1,72 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('テキストスタイル拡張機能: 初期化開始');
-    
-    const DEFAULTS = {
-        strongFontSize: 200,
-        strongFontWeight: 700,
-        strongTextColor: '#ffffff',
-        strongOutlineColor: '#000000',
-        strongOutlineWidth: 1,
-        strongLineHeight: 1.3,
-        strongTextOpacity: 1.0,
-        normalFontSize: 100,
-        normalFontWeight: 400,
-        normalTextColor: '#dddddd',
-        normalOutlineColor: '#000000',
-        normalOutlineWidth: 1,
-        normalLineHeight: 1.5,
-        normalTextOpacity: 1.0,
+
+    const TAG_CONFIG = {
+        p: {
+            label: '<p> (通常)',
+            defaults: {
+                fontSize: 100,
+                fontWeight: 400,
+                textColor: '#dddddd',
+                outlineColor: '#000000',
+                outlineWidth: 1,
+                lineHeight: 1.5,
+                textOpacity: 1.0,
+            },
+        },
+        q: {
+            label: '<q>',
+            defaults: {
+                fontSize: 100,
+                fontWeight: 400,
+                textColor: '#dddddd',
+                outlineColor: '#000000',
+                outlineWidth: 1,
+                lineHeight: 1.5,
+                textOpacity: 1.0,
+            },
+        },
+        em: {
+            label: '<em>',
+            defaults: {
+                fontSize: 100,
+                fontWeight: 400,
+                textColor: '#dddddd',
+                outlineColor: '#000000',
+                outlineWidth: 1,
+                lineHeight: 1.5,
+                textOpacity: 1.0,
+            },
+        },
+        strong: {
+            label: '<strong>',
+            defaults: {
+                fontSize: 200,
+                fontWeight: 700,
+                textColor: '#ffffff',
+                outlineColor: '#000000',
+                outlineWidth: 1,
+                lineHeight: 1.3,
+                textOpacity: 1.0,
+            },
+        },
+    };
+
+    const OTHER_DEFAULTS = {
         chatWindowOpacity: 1.0,
-        panelMinimized: false
+        panelMinimized: false,
+        activeTab: 'p',
     };
     
+    // DOM要素への参照を保持するオブジェクト
+    const controls = {};
+
     function hexToRgb(hex) {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 0, 0';
     }
 
+    // --- パネルと基本UIの生成 ---
     const panel = document.createElement('div');
     panel.id = 'text-styling-panel';
     document.body.appendChild(panel);
@@ -38,301 +80,231 @@ document.addEventListener('DOMContentLoaded', () => {
     restoreButton.id = 'restore-panel-button';
     restoreButton.textContent = '⚙️';
     restoreButton.title = '設定パネルの表示/非表示';
-    
-    restoreButton.onclick = function() {
+    restoreButton.onclick = () => {
         panel.classList.toggle('hidden');
         saveSettings();
     };
-    
     document.body.appendChild(restoreButton);
+    
+    // --- タブUIの生成 ---
+    const tabContainer = document.createElement('div');
+    tabContainer.className = 'tab-container';
+    panel.appendChild(tabContainer);
+    
+    const tabButtons = document.createElement('div');
+    tabButtons.className = 'tab-buttons';
+    tabContainer.appendChild(tabButtons);
+    
+    const tabContents = document.createElement('div');
+    tabContents.className = 'tab-contents';
+    tabContainer.appendChild(tabContents);
 
-    // ▼▼▼ ここから追加 ▼▼▼
-    const windowControlContainer = document.createElement('div');
-    windowControlContainer.id = 'window-control-buttons';
-    document.body.appendChild(windowControlContainer);
 
-    // カスタムボタン
-    const customButton = document.createElement('button');
-    customButton.id = 'custom-button';
-    customButton.className = 'window-control-button';
-    customButton.textContent = 'カスタム';
-    windowControlContainer.appendChild(customButton);
+    /**
+     * 指定されたタグ用の設定コントロールHTMLを生成する
+     * @param {string} tagName - p, q, em, strong のいずれか
+     * @returns {string} - 生成されたHTML文字列
+     */
+    function createTagControlSection(tagName) {
+        const config = TAG_CONFIG[tagName];
+        return `
+            <div class="columns-container">
+                <div class="column">
+                    <div class="text-styling-control-group">
+                        <label for="${tagName}-font-size">文字サイズ: <span id="${tagName}-font-size-value"></span>%</label>
+                        <input type="range" id="${tagName}-font-size" min="50" max="250" step="10">
+                    </div>
+                    <div class="text-styling-control-group">
+                        <label for="${tagName}-font-weight">文字の太さ: <span id="${tagName}-font-weight-value"></span></label>
+                        <input type="range" id="${tagName}-font-weight" min="100" max="900" step="100">
+                    </div>
+                    <div class="text-styling-control-group">
+                        <label for="${tagName}-line-height">行間: <span id="${tagName}-line-height-value"></span></label>
+                        <input type="range" id="${tagName}-line-height" min="1.0" max="3.0" step="0.1">
+                    </div>
+                     <div class="text-styling-control-group">
+                        <label for="${tagName}-text-opacity">文字/縁取り 透過度: <span id="${tagName}-text-opacity-value"></span>%</label>
+                        <input type="range" id="${tagName}-text-opacity" min="0" max="100" step="1">
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="text-styling-control-group">
+                        <label for="${tagName}-text-color">文字色</label>
+                        <input type="color" id="${tagName}-text-color">
+                    </div>
+                    <div class="text-styling-control-group">
+                        <label for="${tagName}-outline-color">縁取り色</label>
+                        <input type="color" id="${tagName}-outline-color">
+                    </div>
+                    <div class="text-styling-control-group">
+                        <label for="${tagName}-outline-width">縁取り幅: <span id="${tagName}-outline-width-value"></span>px</label>
+                        <input type="range" id="${tagName}-outline-width" min="0" max="10" step="0.5">
+                    </div>
+                </div>
+            </div>`;
+    }
 
-    // 中央ボタン
-    const centerButton = document.createElement('button');
-    centerButton.id = 'center-button';
-    centerButton.className = 'window-control-button';
-    centerButton.textContent = '中央';
-    windowControlContainer.appendChild(centerButton);
+    // --- 各タグのコントロールを生成し、DOMに追加 ---
+    Object.keys(TAG_CONFIG).forEach(tagName => {
+        // タブボタン
+        const button = document.createElement('button');
+        button.className = 'tab-button';
+        button.dataset.tab = tagName;
+        button.textContent = TAG_CONFIG[tagName].label;
+        tabButtons.appendChild(button);
+        
+        // タブコンテンツ
+        const content = document.createElement('div');
+        content.className = 'tab-content';
+        content.dataset.tabContent = tagName;
+        content.innerHTML = createTagControlSection(tagName);
+        tabContents.appendChild(content);
 
-    // 右半分ボタン
-    const rightHalfButton = document.createElement('button');
-    rightHalfButton.id = 'right-half-button';
-    rightHalfButton.className = 'window-control-button';
-    rightHalfButton.textContent = '右半分';
-    windowControlContainer.appendChild(rightHalfButton);
-    // ▲▲▲ ここまで追加 ▲▲▲
+        // DOM要素への参照を保存
+        controls[tagName] = {
+            fontSizeInput: content.querySelector(`#${tagName}-font-size`),
+            fontSizeValue: content.querySelector(`#${tagName}-font-size-value`),
+            fontWeightInput: content.querySelector(`#${tagName}-font-weight`),
+            fontWeightValue: content.querySelector(`#${tagName}-font-weight-value`),
+            lineHeightInput: content.querySelector(`#${tagName}-line-height`),
+            lineHeightValue: content.querySelector(`#${tagName}-line-height-value`),
+            textColorInput: content.querySelector(`#${tagName}-text-color`),
+            outlineColorInput: content.querySelector(`#${tagName}-outline-color`),
+            outlineWidthInput: content.querySelector(`#${tagName}-outline-width`),
+            outlineWidthValue: content.querySelector(`#${tagName}-outline-width-value`),
+            textOpacityInput: content.querySelector(`#${tagName}-text-opacity`),
+            textOpacityValue: content.querySelector(`#${tagName}-text-opacity-value`),
+        };
 
-    const mainContainer = document.createElement('div');
-    panel.appendChild(mainContainer);
-    
-    const columnsContainer = document.createElement('div');
-    columnsContainer.className = 'columns-container';
-    mainContainer.appendChild(columnsContainer);
-    
-    const leftColumn = document.createElement('div');
-    leftColumn.className = 'column';
-    columnsContainer.appendChild(leftColumn);
-    
-    const rightColumn = document.createElement('div');
-    rightColumn.className = 'column';
-    columnsContainer.appendChild(rightColumn);
-    
-    const strongSection = document.createElement('div');
-    strongSection.className = 'text-styling-section';
-    strongSection.innerHTML = `
-        <h3>強調テキスト設定 (<strong>タグ内)</h3>
-        <div class="text-styling-control-group">
-            <label for="strong-font-size">文字サイズ: <span id="strong-font-size-value"></span>%</label>
-            <input type="range" id="strong-font-size" min="50" max="200" step="10">
-        </div>
-        <div class="text-styling-control-group">
-            <label for="strong-font-weight">文字の太さ: <span id="strong-font-weight-value"></span></label>
-            <input type="range" id="strong-font-weight" min="100" max="900" step="100">
-        </div>
-        <div class="text-styling-control-group">
-            <label for="strong-line-height">行間: <span id="strong-line-height-value"></span></label>
-            <input type="range" id="strong-line-height" min="1.0" max="2.5" step="0.1">
-        </div>
-        <div class="text-styling-control-group">
-            <label for="strong-text-color">文字色</label>
-            <input type="color" id="strong-text-color">
-        </div>
-        <div class="text-styling-control-group">
-            <label for="strong-outline-color">縁取り色</label>
-            <input type="color" id="strong-outline-color">
-        </div>
-        <div class="text-styling-control-group">
-            <label for="strong-outline-width">縁取り幅: <span id="strong-outline-width-value"></span>px</label>
-            <input type="range" id="strong-outline-width" min="0" max="5" step="1.0">
-        </div>
-        <div class="text-styling-control-group">
-            <label for="strong-text-opacity">文字/縁取り 透過度: <span id="strong-text-opacity-value"></span>%</label>
-            <input type="range" id="strong-text-opacity" min="0" max="100" step="1">
-        </div>
-    `;
-    leftColumn.appendChild(strongSection);
-    
-    const normalSection = document.createElement('div');
-    normalSection.className = 'text-styling-section';
-    normalSection.innerHTML = `
-        <h3>通常テキスト設定 (<strong>タグ外)</h3>
-        <div class="text-styling-control-group">
-            <label for="normal-font-size">文字サイズ: <span id="normal-font-size-value"></span>%</label>
-            <input type="range" id="normal-font-size" min="50" max="200" step="10">
-        </div>
-        <div class="text-styling-control-group">
-            <label for="normal-font-weight">文字の太さ: <span id="normal-font-weight-value"></span></label>
-            <input type="range" id="normal-font-weight" min="100" max="900" step="100">
-        </div>
-        <div class="text-styling-control-group">
-            <label for="normal-line-height">行間: <span id="normal-line-height-value"></span></label>
-            <input type="range" id="normal-line-height" min="1.0" max="2.5" step="0.1">
-        </div>
-        <div class="text-styling-control-group">
-            <label for="normal-text-color">文字色</label>
-            <input type="color" id="normal-text-color">
-        </div>
-        <div class="text-styling-control-group">
-            <label for="normal-outline-color">縁取り色</label>
-            <input type="color" id="normal-outline-color">
-        </div>
-        <div class="text-styling-control-group">
-            <label for="normal-outline-width">縁取り幅: <span id="normal-outline-width-value"></span>px</label>
-            <input type="range" id="normal-outline-width" min="0" max="5" step="1.0">
-        </div>
-        <div class="text-styling-control-group">
-            <label for="normal-text-opacity">文字/縁取り 透過度: <span id="normal-text-opacity-value"></span>%</label>
-            <input type="range" id="normal-text-opacity" min="0" max="100" step="1">
-        </div>
-    `;
-    rightColumn.appendChild(normalSection);
-    
+        // イベントリスナーを登録
+        Object.values(controls[tagName]).forEach(element => {
+            if (element.tagName === 'INPUT') {
+                element.addEventListener('input', () => updateStyle(tagName));
+            }
+        });
+    });
+
+    // --- チャットウィンドウ設定 ---
     const chatSection = document.createElement('div');
     chatSection.className = 'text-styling-section';
+    chatSection.style.marginTop = '15px';
     chatSection.innerHTML = `
         <h3>チャットウィンドウ設定</h3>
         <div class="text-styling-control-group">
             <label for="chat-opacity">透過度: <span id="chat-opacity-value"></span>%</label>
             <input type="range" id="chat-opacity" min="0" max="100" step="1">
-        </div>
-    `;
-    mainContainer.appendChild(chatSection);
+        </div>`;
+    panel.appendChild(chatSection);
     
-    const strongFontSizeInput = document.getElementById('strong-font-size');
-    const strongFontSizeValue = document.getElementById('strong-font-size-value');
-    const strongFontWeightInput = document.getElementById('strong-font-weight');
-    const strongFontWeightValue = document.getElementById('strong-font-weight-value');
-    const strongLineHeightInput = document.getElementById('strong-line-height');
-    const strongLineHeightValue = document.getElementById('strong-line-height-value');
-    const strongTextColorInput = document.getElementById('strong-text-color');
-    const strongOutlineColorInput = document.getElementById('strong-outline-color');
-    const strongOutlineWidthInput = document.getElementById('strong-outline-width');
-    const strongOutlineWidthValue = document.getElementById('strong-outline-width-value');
-    const strongTextOpacityInput = document.getElementById('strong-text-opacity');
-    const strongTextOpacityValue = document.getElementById('strong-text-opacity-value');
-    
-    const normalFontSizeInput = document.getElementById('normal-font-size');
-    const normalFontSizeValue = document.getElementById('normal-font-size-value');
-    const normalFontWeightInput = document.getElementById('normal-font-weight');
-    const normalFontWeightValue = document.getElementById('normal-font-weight-value');
-    const normalLineHeightInput = document.getElementById('normal-line-height');
-    const normalLineHeightValue = document.getElementById('normal-line-height-value');
-    const normalTextColorInput = document.getElementById('normal-text-color');
-    const normalOutlineColorInput = document.getElementById('normal-outline-color');
-    const normalOutlineWidthInput = document.getElementById('normal-outline-width');
-    const normalOutlineWidthValue = document.getElementById('normal-outline-width-value');
-    const normalTextOpacityInput = document.getElementById('normal-text-opacity');
-    const normalTextOpacityValue = document.getElementById('normal-text-opacity-value');
-    
-    const chatOpacityInput = document.getElementById('chat-opacity');
-    const chatOpacityValue = document.getElementById('chat-opacity-value');
+    controls.chatOpacityInput = chatSection.querySelector('#chat-opacity');
+    controls.chatOpacityValue = chatSection.querySelector('#chat-opacity-value');
+    controls.chatOpacityInput.addEventListener('input', updateChatWindowOpacity);
 
-    strongFontSizeInput.addEventListener('input', () => updateStrongStyle());
-    strongFontWeightInput.addEventListener('input', () => updateStrongStyle());
-    strongLineHeightInput.addEventListener('input', () => updateStrongStyle());
-    strongTextColorInput.addEventListener('input', () => updateStrongStyle());
-    strongOutlineColorInput.addEventListener('input', () => updateStrongStyle());
-    strongOutlineWidthInput.addEventListener('input', () => updateStrongStyle());
-    strongTextOpacityInput.addEventListener('input', () => updateStrongStyle());
-    
-    normalFontSizeInput.addEventListener('input', () => updateNormalStyle());
-    normalFontWeightInput.addEventListener('input', () => updateNormalStyle());
-    normalLineHeightInput.addEventListener('input', () => updateNormalStyle());
-    normalTextColorInput.addEventListener('input', () => updateNormalStyle());
-    normalOutlineColorInput.addEventListener('input', () => updateNormalStyle());
-    normalOutlineWidthInput.addEventListener('input', () => updateNormalStyle());
-    normalTextOpacityInput.addEventListener('input', () => updateNormalStyle());
-    
-    chatOpacityInput.addEventListener('input', updateChatWindowOpacity);
+    // --- タブ切り替えロジック ---
+    tabButtons.addEventListener('click', (e) => {
+        if (e.target.matches('.tab-button')) {
+            const tabId = e.target.dataset.tab;
+            setActiveTab(tabId);
+            saveSettings(); // アクティブタブを保存
+        }
+    });
 
-    function updateStrongStyle() {
-        const fontSize = parseInt(strongFontSizeInput.value);
-        const fontWeight = parseInt(strongFontWeightInput.value);
-        const lineHeight = parseFloat(strongLineHeightInput.value);
-        const textColor = strongTextColorInput.value;
-        const outlineColor = strongOutlineColorInput.value;
-        const outlineWidth = parseFloat(strongOutlineWidthInput.value);
-        const textOpacity = parseFloat(strongTextOpacityInput.value) / 100;
-        
-        strongFontSizeValue.textContent = fontSize;
-        strongFontWeightValue.textContent = fontWeight;
-        strongLineHeightValue.textContent = lineHeight.toFixed(1);
-        strongOutlineWidthValue.textContent = outlineWidth.toFixed(1);
-        strongTextOpacityValue.textContent = Math.round(textOpacity * 100);
-        
-        document.documentElement.style.setProperty('--strong-font-size', `${fontSize}%`);
-        document.documentElement.style.setProperty('--strong-font-weight', fontWeight);
-        document.documentElement.style.setProperty('--strong-line-height', lineHeight);
-        document.documentElement.style.setProperty('--strong-text-rgb', hexToRgb(textColor));
-        document.documentElement.style.setProperty('--strong-text-opacity', textOpacity);
-        document.documentElement.style.setProperty('--strong-outline-width', `${outlineWidth}px`);
-        document.documentElement.style.setProperty('--strong-outline-rgb', hexToRgb(outlineColor));
-        
-        saveSettings();
+    function setActiveTab(tabId) {
+        tabButtons.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabId);
+        });
+        tabContents.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.toggle('active', content.dataset.tabContent === tabId);
+        });
     }
 
-    function updateNormalStyle() {
-        const fontSize = parseInt(normalFontSizeInput.value);
-        const fontWeight = parseInt(normalFontWeightInput.value);
-        const lineHeight = parseFloat(normalLineHeightInput.value);
-        const textColor = normalTextColorInput.value;
-        const outlineColor = normalOutlineColorInput.value;
-        const outlineWidth = parseFloat(normalOutlineWidthInput.value);
-        const textOpacity = parseFloat(normalTextOpacityInput.value) / 100;
+    /**
+     * 指定されたタグのスタイルを更新し、CSS変数を設定する
+     * @param {string} tagName - 更新するタグ名
+     */
+    function updateStyle(tagName) {
+        const tagControls = controls[tagName];
+        const rootStyle = document.documentElement.style;
 
-        normalFontSizeValue.textContent = fontSize;
-        normalFontWeightValue.textContent = fontWeight;
-        normalLineHeightValue.textContent = lineHeight.toFixed(1);
-        normalOutlineWidthValue.textContent = outlineWidth.toFixed(1);
-        normalTextOpacityValue.textContent = Math.round(textOpacity * 100);
-        
-        document.documentElement.style.setProperty('--normal-font-size', `${fontSize}%`);
-        document.documentElement.style.setProperty('--normal-font-weight', fontWeight);
-        document.documentElement.style.setProperty('--normal-line-height', lineHeight);
-        document.documentElement.style.setProperty('--normal-text-rgb', hexToRgb(textColor));
-        document.documentElement.style.setProperty('--normal-text-opacity', textOpacity);
-        document.documentElement.style.setProperty('--normal-outline-width', `${outlineWidth}px`);
-        document.documentElement.style.setProperty('--normal-outline-rgb', hexToRgb(outlineColor));
+        const fontSize = parseInt(tagControls.fontSizeInput.value);
+        const fontWeight = parseInt(tagControls.fontWeightInput.value);
+        const lineHeight = parseFloat(tagControls.lineHeightInput.value);
+        const textColor = tagControls.textColorInput.value;
+        const outlineColor = tagControls.outlineColorInput.value;
+        const outlineWidth = parseFloat(tagControls.outlineWidthInput.value);
+        const textOpacity = parseFloat(tagControls.textOpacityInput.value) / 100;
+
+        tagControls.fontSizeValue.textContent = fontSize;
+        tagControls.fontWeightValue.textContent = fontWeight;
+        tagControls.lineHeightValue.textContent = lineHeight.toFixed(1);
+        tagControls.outlineWidthValue.textContent = outlineWidth.toFixed(1);
+        tagControls.textOpacityValue.textContent = Math.round(textOpacity * 100);
+
+        rootStyle.setProperty(`--${tagName}-font-size`, `${fontSize}%`);
+        rootStyle.setProperty(`--${tagName}-font-weight`, fontWeight);
+        rootStyle.setProperty(`--${tagName}-line-height`, lineHeight);
+        rootStyle.setProperty(`--${tagName}-text-rgb`, hexToRgb(textColor));
+        rootStyle.setProperty(`--${tagName}-text-opacity`, textOpacity);
+        rootStyle.setProperty(`--${tagName}-outline-width`, `${outlineWidth}px`);
+        rootStyle.setProperty(`--${tagName}-outline-rgb`, hexToRgb(outlineColor));
 
         saveSettings();
     }
 
     function updateChatWindowOpacity() {
-        const opacity = parseInt(chatOpacityInput.value) / 100;
-        chatOpacityValue.textContent = chatOpacityInput.value;
+        const opacity = parseInt(controls.chatOpacityInput.value) / 100;
+        controls.chatOpacityValue.textContent = controls.chatOpacityInput.value;
         document.documentElement.style.setProperty('--chat-opacity', opacity);
         saveSettings();
     }
 
     function saveSettings() {
         const settings = {
-            strongFontSize: parseInt(strongFontSizeInput.value),
-            strongFontWeight: parseInt(strongFontWeightInput.value),
-            strongLineHeight: parseFloat(strongLineHeightInput.value),
-            strongTextColor: strongTextColorInput.value,
-            strongOutlineColor: strongOutlineColorInput.value,
-            strongOutlineWidth: parseFloat(strongOutlineWidthInput.value),
-            strongTextOpacity: parseFloat(strongTextOpacityInput.value) / 100,
-            normalFontSize: parseInt(normalFontSizeInput.value),
-            normalFontWeight: parseInt(normalFontWeightInput.value),
-            normalLineHeight: parseFloat(normalLineHeightInput.value),
-            normalTextColor: normalTextColorInput.value,
-            normalOutlineColor: normalOutlineColorInput.value,
-            normalOutlineWidth: parseFloat(normalOutlineWidthInput.value),
-            normalTextOpacity: parseFloat(normalTextOpacityInput.value) / 100,
-            chatWindowOpacity: parseFloat(chatOpacityInput.value) / 100,
-            panelMinimized: panel.classList.contains('hidden')
+            tags: {},
+            chatWindowOpacity: parseFloat(controls.chatOpacityInput.value) / 100,
+            panelMinimized: panel.classList.contains('hidden'),
+            activeTab: tabButtons.querySelector('.tab-button.active').dataset.tab,
         };
-        localStorage.setItem('textStylingSettings', JSON.stringify(settings));
+        Object.keys(TAG_CONFIG).forEach(tagName => {
+            const tagControls = controls[tagName];
+            settings.tags[tagName] = {
+                fontSize: parseInt(tagControls.fontSizeInput.value),
+                fontWeight: parseInt(tagControls.fontWeightInput.value),
+                lineHeight: parseFloat(tagControls.lineHeightInput.value),
+                textColor: tagControls.textColorInput.value,
+                outlineColor: tagControls.outlineColorInput.value,
+                outlineWidth: parseFloat(tagControls.outlineWidthInput.value),
+                textOpacity: parseFloat(tagControls.textOpacityInput.value) / 100,
+            };
+        });
+        localStorage.setItem('textStylingSettings_v2', JSON.stringify(settings));
     }
 
     function restoreSettings() {
-        const saved = localStorage.getItem('textStylingSettings');
+        const saved = localStorage.getItem('textStylingSettings_v2');
         if (saved) {
             try {
                 const settings = JSON.parse(saved);
                 
-                strongFontSizeInput.value = settings.strongFontSize || DEFAULTS.strongFontSize;
-                strongFontWeightInput.value = settings.strongFontWeight || DEFAULTS.strongFontWeight;
-                strongLineHeightInput.value = settings.strongLineHeight || DEFAULTS.strongLineHeight;
-                strongTextColorInput.value = settings.strongTextColor || DEFAULTS.strongTextColor;
-                strongOutlineColorInput.value = settings.strongOutlineColor || DEFAULTS.strongOutlineColor;
-                strongOutlineWidthInput.value = settings.strongOutlineWidth !== undefined ? settings.strongOutlineWidth : DEFAULTS.strongOutlineWidth;
-                strongTextOpacityInput.value = Math.round((settings.strongTextOpacity !== undefined ? settings.strongTextOpacity : DEFAULTS.strongTextOpacity) * 100);
-                
-                normalFontSizeInput.value = settings.normalFontSize || DEFAULTS.normalFontSize;
-                normalFontWeightInput.value = settings.normalFontWeight || DEFAULTS.normalFontWeight;
-                normalLineHeightInput.value = settings.normalLineHeight || DEFAULTS.normalLineHeight;
-                normalTextColorInput.value = settings.normalTextColor || DEFAULTS.normalTextColor;
-                normalOutlineColorInput.value = settings.normalOutlineColor || DEFAULTS.normalOutlineColor;
-                normalOutlineWidthInput.value = settings.normalOutlineWidth !== undefined ? settings.normalOutlineWidth : DEFAULTS.normalOutlineWidth;
-                normalTextOpacityInput.value = Math.round((settings.normalTextOpacity !== undefined ? settings.normalTextOpacity : DEFAULTS.normalTextOpacity) * 100);
+                Object.keys(TAG_CONFIG).forEach(tagName => {
+                    const savedTag = settings.tags?.[tagName] || {};
+                    const defaultTag = TAG_CONFIG[tagName].defaults;
+                    const tagControls = controls[tagName];
 
-                chatOpacityInput.value = Math.round((settings.chatWindowOpacity !== undefined ? settings.chatWindowOpacity : DEFAULTS.chatWindowOpacity) * 100);
-                
-                if (settings.panelMinimized) {
-                    panel.classList.add('hidden');
-                } else {
-                    panel.classList.remove('hidden');
-                }
+                    tagControls.fontSizeInput.value = savedTag.fontSize ?? defaultTag.fontSize;
+                    tagControls.fontWeightInput.value = savedTag.fontWeight ?? defaultTag.fontWeight;
+                    tagControls.lineHeightInput.value = savedTag.lineHeight ?? defaultTag.lineHeight;
+                    tagControls.textColorInput.value = savedTag.textColor ?? defaultTag.textColor;
+                    tagControls.outlineColorInput.value = savedTag.outlineColor ?? defaultTag.outlineColor;
+                    tagControls.outlineWidthInput.value = savedTag.outlineWidth ?? defaultTag.outlineWidth;
+                    tagControls.textOpacityInput.value = Math.round((savedTag.textOpacity ?? defaultTag.textOpacity) * 100);
+                });
 
-                const originalSave = saveSettings;
-                saveSettings = () => {};
-                updateStrongStyle();
-                updateNormalStyle();
-                updateChatWindowOpacity();
-                saveSettings = originalSave;
+                controls.chatOpacityInput.value = Math.round((settings.chatWindowOpacity ?? OTHER_DEFAULTS.chatWindowOpacity) * 100);
+                
+                if (settings.panelMinimized) panel.classList.add('hidden');
+                
+                setActiveTab(settings.activeTab || OTHER_DEFAULTS.activeTab);
 
             } catch (e) {
                 console.error('設定復元エラー:', e);
@@ -341,37 +313,56 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             setDefaultSettings();
         }
-    }
-
-    function setDefaultSettings() {
-        strongFontSizeInput.value = DEFAULTS.strongFontSize;
-        strongFontWeightInput.value = DEFAULTS.strongFontWeight;
-        strongLineHeightInput.value = DEFAULTS.strongLineHeight;
-        strongTextColorInput.value = DEFAULTS.strongTextColor;
-        strongOutlineColorInput.value = DEFAULTS.strongOutlineColor;
-        strongOutlineWidthInput.value = DEFAULTS.strongOutlineWidth;
-        strongTextOpacityInput.value = Math.round(DEFAULTS.strongTextOpacity * 100);
         
-        normalFontSizeInput.value = DEFAULTS.normalFontSize;
-        normalFontWeightInput.value = DEFAULTS.normalFontWeight;
-        normalLineHeightInput.value = DEFAULTS.normalLineHeight;
-        normalTextColorInput.value = DEFAULTS.normalTextColor;
-        normalOutlineColorInput.value = DEFAULTS.normalOutlineColor;
-        normalOutlineWidthInput.value = DEFAULTS.normalOutlineWidth;
-        normalTextOpacityInput.value = Math.round(DEFAULTS.normalTextOpacity * 100);
-        
-        chatOpacityInput.value = Math.round(DEFAULTS.chatWindowOpacity * 100);
-        
-        panel.classList.remove('hidden');
-
+        // 復元した設定をUIとCSSに一括反映
         const originalSave = saveSettings;
-        saveSettings = () => {};
-        updateStrongStyle();
-        updateNormalStyle();
+        saveSettings = () => {}; // 反映中の不要な保存を抑制
+        Object.keys(TAG_CONFIG).forEach(tagName => updateStyle(tagName));
         updateChatWindowOpacity();
         saveSettings = originalSave;
     }
 
+    function setDefaultSettings() {
+        Object.keys(TAG_CONFIG).forEach(tagName => {
+            const defaultTag = TAG_CONFIG[tagName].defaults;
+            const tagControls = controls[tagName];
+            
+            tagControls.fontSizeInput.value = defaultTag.fontSize;
+            tagControls.fontWeightInput.value = defaultTag.fontWeight;
+            tagControls.lineHeightInput.value = defaultTag.lineHeight;
+            tagControls.textColorInput.value = defaultTag.textColor;
+            tagControls.outlineColorInput.value = defaultTag.outlineColor;
+            tagControls.outlineWidthInput.value = defaultTag.outlineWidth;
+            tagControls.textOpacityInput.value = Math.round(defaultTag.textOpacity * 100);
+        });
+        
+        controls.chatOpacityInput.value = Math.round(OTHER_DEFAULTS.chatWindowOpacity * 100);
+        panel.classList.remove('hidden');
+        setActiveTab(OTHER_DEFAULTS.activeTab);
+
+        const originalSave = saveSettings;
+        saveSettings = () => {};
+        Object.keys(TAG_CONFIG).forEach(tagName => updateStyle(tagName));
+        updateChatWindowOpacity();
+        saveSettings = originalSave;
+    }
+
+    // --- ウィンドウコントロール (変更なし) ---
+    const windowControlContainer = document.createElement('div');
+    windowControlContainer.id = 'window-control-buttons';
+    document.body.appendChild(windowControlContainer);
+    const centerButton = document.createElement('button');
+    centerButton.id = 'center-button';
+    centerButton.className = 'window-control-button';
+    centerButton.textContent = '中央';
+    windowControlContainer.appendChild(centerButton);
+    const rightHalfButton = document.createElement('button');
+    rightHalfButton.id = 'right-half-button';
+    rightHalfButton.className = 'window-control-button';
+    rightHalfButton.textContent = '右半分';
+    windowControlContainer.appendChild(rightHalfButton);
+
+    // --- 初期化処理 ---
     setTimeout(() => {
         console.log('初期化処理を開始');
         const chatElement = document.getElementById('chat');
@@ -380,40 +371,41 @@ document.addEventListener('DOMContentLoaded', () => {
             document.documentElement.style.setProperty('--chat-bg-rgb', hexToRgb(chatBgColor));
         }
 
-        // ▼▼▼ ここから追加 ▼▼▼
         const sheld = document.getElementById('sheld');
         const sheldheader = document.getElementById('sheldheader');
-
         if (sheld && sheldheader) {
-            // カスタムボタンのクリックイベント
-            customButton.addEventListener('click', () => {
-                sheld.style.resize = 'both';
-                sheldheader.style.display = 'block';
-            });
-
-            // 中央ボタンのクリックイベント
             centerButton.addEventListener('click', () => {
+                sheld.style.resize = 'none';
                 sheld.style.inset = '3.5vh 0px 60px 25vw';
                 sheld.style.height = '100vh';
                 sheld.style.width = '50vw';
                 sheld.style.margin = 'unset';
-                sheld.style.resize = 'none';
-                sheldheader.style.display = 'none';
             });
-
-            // 右半分ボタンのクリックイベント
             rightHalfButton.addEventListener('click', () => {
+                sheld.style.resize = 'none';
                 sheld.style.inset = '3.5vh 0px 60px 50vw';
                 sheld.style.height = '100vh';
                 sheld.style.width = '50vw';
                 sheld.style.margin = 'unset';
-                sheld.style.resize = 'none';
-                sheldheader.style.display = 'none';
             });
+
+            const topLimit = 35;
+            sheldheader.addEventListener('mousedown', () => {
+                sheld.style.resize = 'both';
+                const onMouseUp = () => {
+                    requestAnimationFrame(() => {
+                        const currentTop = parseFloat(sheld.style.top);
+                        if (!isNaN(currentTop) && currentTop < topLimit) {
+                            sheld.style.top = `${topLimit}px`;
+                        }
+                    });
+                };
+                document.addEventListener('mouseup', onMouseUp, { once: true });
+            });
+            console.log('チャットウィンドウのドラッグ終了時位置補正を有効化しました。');
         } else {
             console.error('チャットウィンドウの要素 (#sheld または #sheldheader) が見つかりませんでした。');
         }
-        // ▲▲▲ ここまで追加 ▲▲▲
         
         restoreSettings();
     }, 500);
