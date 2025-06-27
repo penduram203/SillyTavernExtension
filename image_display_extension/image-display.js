@@ -8,10 +8,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // デフォルトの画像マッピング
     const defaultImageMap = {
-        "海": "https://files.catbox.moe/ar7sly.png",
-        "山|山頂|山脈": "https://files.catbox.moe/g7qyus.png",
-        "0001|０００１": "https://files.catbox.moe/l81266.png",
-        "default": "https://files.catbox.moe/z4smwu.png"
+        "山": "https://files.catbox.moe/fnbsc1.png",
+        "川": "https://files.catbox.moe/8xv1lx.png",
+        "町": "https://files.catbox.moe/gci6w9.png",
+        "default": "https://files.catbox.moe/94yxhd.png"
     };
 
     // グローバル変数
