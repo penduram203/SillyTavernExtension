@@ -1,8 +1,0 @@
-{
-  "name": "Text Linebreaker",
-  "version": "1.0.0",
-  "description": "Automatically adds an extra line break with a non-visible character after each <br> tag inside chat messages to create a blank line.",
-  "author": "Your Name",
-  "script": "text_linebreaker.js",
-  "style": "text_linebreaker.css"
-}
