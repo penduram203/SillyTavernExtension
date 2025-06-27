@@ -40,8 +40,24 @@ chat-window-onoffとtext_styling_extensionはそのまま使えますが<br>
 image-displayに関してはキーワードファイルの設定が必要です<br>
 <br>
 # image-display
-背景とは別に画像表示ウインドウを用意し、ユーザーが入力したキーワードに応じて画像を自動的に切り替えます<br>
-
+背景とは別に画像表示ウインドウを用意し、ユーザーが入力したキーワードに応じて画像を自動的に切り替える機能です<br>
+まず**SillyTavern/public/scripts/extensions/image_display_extension/character_image_mapping**を開き<br>
+中に入っている**sample.json**をテキストエディタで開きます
+```
+{
+    "山": "https://files.catbox.moe/fnbsc1.png",
+    "川": "https://files.catbox.moe/8xv1lx.png",
+    "町": "https://files.catbox.moe/gci6w9.png",
+    "default": "https://files.catbox.moe/94yxhd.png"
+}
+```
+JSONファイルは上記のような構造になっています<br>
+「”」で囲まれた、”山”や”川”といった単語がチャット欄に入力されると<br>
+単語と関連したアドレスの画像が画像表示ウインドウに表示されます<br>
+<br>
+![](https://files.catbox.moe/izaf0p.png)<br>
+<br>
+あｄふぁ
 
 # chat-window-onoff<br>
 チャットウインドウの表示と非表示を切り替えれるようになります<br>
