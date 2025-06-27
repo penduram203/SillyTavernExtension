@@ -6,10 +6,7 @@ SillyTavernの拡張機能です
 ②chat-window-onoff<br>
 チャットウインドウの表示と非表示を切り替えます
 
-③text_linebreaker<br>
-行と行の間に自動的に１行分追加して読みやすくします
-
-④text_styling_extension<br>
+③text_styling_extension<br>
 文字のサイズや色を調整します
 
 ![859862010303651612.png](https://github.com/penduram203/SillyTavernExtension/blob/main/859862010303651612.png)
