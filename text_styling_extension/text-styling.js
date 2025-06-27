@@ -1,72 +1,52 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('テキストスタイル拡張機能: 初期化開始');
+    console.log('テキストスタイル拡張機能 v6: 初期化開始');
 
     const TAG_CONFIG = {
         p: {
-            label: '<p> (通常)',
-            defaults: {
-                fontSize: 100,
-                fontWeight: 400,
-                textColor: '#dddddd',
-                outlineColor: '#000000',
-                outlineWidth: 1,
-                lineHeight: 1.5,
-                textOpacity: 1.0,
-            },
+            label: '<p>',
+            isDynamic: false,
+            defaults: { enabled: true, fontSize: 100, fontWeight: 400, textColor: '#dddddd', outlineColor: '#000000', outlineWidth: 1, lineHeight: 1.5, textOpacity: 1.0 }
         },
         q: {
             label: '<q>',
-            defaults: {
-                fontSize: 100,
-                fontWeight: 400,
-                textColor: '#dddddd',
-                outlineColor: '#000000',
-                outlineWidth: 1,
-                lineHeight: 1.5,
-                textOpacity: 1.0,
-            },
+            isDynamic: false,
+            defaults: { enabled: true, fontSize: 100, fontWeight: 400, textColor: '#dddddd', outlineColor: '#000000', outlineWidth: 1, lineHeight: 1.5, textOpacity: 1.0 }
         },
         em: {
             label: '<em>',
-            defaults: {
-                fontSize: 100,
-                fontWeight: 400,
-                textColor: '#dddddd',
-                outlineColor: '#000000',
-                outlineWidth: 1,
-                lineHeight: 1.5,
-                textOpacity: 1.0,
-            },
+            isDynamic: false,
+            defaults: { enabled: true, fontSize: 100, fontWeight: 400, textColor: '#dddddd', outlineColor: '#000000', outlineWidth: 1, lineHeight: 1.5, textOpacity: 1.0 }
         },
         strong: {
             label: '<strong>',
-            defaults: {
-                fontSize: 200,
-                fontWeight: 700,
-                textColor: '#ffffff',
-                outlineColor: '#000000',
-                outlineWidth: 1,
-                lineHeight: 1.3,
-                textOpacity: 1.0,
-            },
+            isDynamic: false,
+            defaults: { enabled: true, fontSize: 200, fontWeight: 700, textColor: '#ffffff', outlineColor: '#000000', outlineWidth: 1, lineHeight: 1.3, textOpacity: 1.0 }
         },
+        'jp-quote': {
+            label: '「」鉤括弧',
+            isDynamic: true,
+            defaults: { enabled: true, fontSize: 100, fontWeight: 400, textColor: '#ffff78', outlineColor: '#000000', outlineWidth: 1, lineHeight: 1.5, textOpacity: 1.0 }
+        },
+        'jp-space': {
+            label: '　囲み',
+            isDynamic: true,
+            defaults: { enabled: true, fontSize: 100, fontWeight: 400, textColor: '#add8e6', outlineColor: '#000000', outlineWidth: 1, lineHeight: 1.5, textOpacity: 1.0 }
+        }
     };
-
     const OTHER_DEFAULTS = {
         chatWindowOpacity: 1.0,
         panelMinimized: false,
-        activeTab: 'p',
+        activeTab: 'p'
     };
-    
-    // DOM要素への参照を保持するオブジェクト
     const controls = {};
+    let chatObserver = null;
 
     function hexToRgb(hex) {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 0, 0';
     }
 
-    // --- パネルと基本UIの生成 ---
+    // --- UI生成 ---
     const panel = document.createElement('div');
     panel.id = 'text-styling-panel';
     document.body.appendChild(panel);
@@ -78,36 +58,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const restoreButton = document.createElement('button');
     restoreButton.id = 'restore-panel-button';
-    restoreButton.textContent = '⚙️';
+    restoreButton.innerHTML = '⚙️';
     restoreButton.title = '設定パネルの表示/非表示';
     restoreButton.onclick = () => {
         panel.classList.toggle('hidden');
         saveSettings();
     };
     document.body.appendChild(restoreButton);
-    
-    // --- タブUIの生成 ---
+
     const tabContainer = document.createElement('div');
     tabContainer.className = 'tab-container';
     panel.appendChild(tabContainer);
-    
+
     const tabButtons = document.createElement('div');
     tabButtons.className = 'tab-buttons';
     tabContainer.appendChild(tabButtons);
-    
+
     const tabContents = document.createElement('div');
     tabContents.className = 'tab-contents';
     tabContainer.appendChild(tabContents);
 
-
-    /**
-     * 指定されたタグ用の設定コントロールHTMLを生成する
-     * @param {string} tagName - p, q, em, strong のいずれか
-     * @returns {string} - 生成されたHTML文字列
-     */
     function createTagControlSection(tagName) {
-        const config = TAG_CONFIG[tagName];
         return `
+            <div class="enable-styling-toggle">
+                <input type="checkbox" id="${tagName}-enabled">
+                <label for="${tagName}-enabled">このスタイルを有効にする</label>
+            </div>
             <div class="columns-container">
                 <div class="column">
                     <div class="text-styling-control-group">
@@ -122,8 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label for="${tagName}-line-height">行間: <span id="${tagName}-line-height-value"></span></label>
                         <input type="range" id="${tagName}-line-height" min="1.0" max="3.0" step="0.1">
                     </div>
-                     <div class="text-styling-control-group">
-                        <label for="${tagName}-text-opacity">文字/縁取り 透過度: <span id="${tagName}-text-opacity-value"></span>%</label>
+                    <div class="text-styling-control-group">
+                        <label for="${tagName}-text-opacity">透過度: <span id="${tagName}-text-opacity-value"></span>%</label>
                         <input type="range" id="${tagName}-text-opacity" min="0" max="100" step="1">
                     </div>
                 </div>
@@ -144,24 +120,22 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
     }
 
-    // --- 各タグのコントロールを生成し、DOMに追加 ---
     Object.keys(TAG_CONFIG).forEach(tagName => {
-        // タブボタン
         const button = document.createElement('button');
         button.className = 'tab-button';
         button.dataset.tab = tagName;
         button.textContent = TAG_CONFIG[tagName].label;
         tabButtons.appendChild(button);
-        
-        // タブコンテンツ
+
         const content = document.createElement('div');
         content.className = 'tab-content';
         content.dataset.tabContent = tagName;
         content.innerHTML = createTagControlSection(tagName);
         tabContents.appendChild(content);
 
-        // DOM要素への参照を保存
         controls[tagName] = {
+            content: content,
+            enabledCheckbox: content.querySelector(`#${tagName}-enabled`),
             fontSizeInput: content.querySelector(`#${tagName}-font-size`),
             fontSizeValue: content.querySelector(`#${tagName}-font-size-value`),
             fontWeightInput: content.querySelector(`#${tagName}-font-weight`),
@@ -173,18 +147,17 @@ document.addEventListener('DOMContentLoaded', () => {
             outlineWidthInput: content.querySelector(`#${tagName}-outline-width`),
             outlineWidthValue: content.querySelector(`#${tagName}-outline-width-value`),
             textOpacityInput: content.querySelector(`#${tagName}-text-opacity`),
-            textOpacityValue: content.querySelector(`#${tagName}-text-opacity-value`),
+            textOpacityValue: content.querySelector(`#${tagName}-text-opacity-value`)
         };
 
-        // イベントリスナーを登録
+        controls[tagName].enabledCheckbox.addEventListener('change', () => updateStyleAndAllMessages(tagName));
         Object.values(controls[tagName]).forEach(element => {
-            if (element.tagName === 'INPUT') {
-                element.addEventListener('input', () => updateStyle(tagName));
+            if (element && element.tagName === 'INPUT' && element.type !== 'checkbox') {
+                element.addEventListener('input', () => updateStyleAndAllMessages(tagName));
             }
         });
     });
 
-    // --- チャットウィンドウ設定 ---
     const chatSection = document.createElement('div');
     chatSection.className = 'text-styling-section';
     chatSection.style.marginTop = '15px';
@@ -199,58 +172,87 @@ document.addEventListener('DOMContentLoaded', () => {
     controls.chatOpacityInput = chatSection.querySelector('#chat-opacity');
     controls.chatOpacityValue = chatSection.querySelector('#chat-opacity-value');
     controls.chatOpacityInput.addEventListener('input', updateChatWindowOpacity);
-
-    // --- タブ切り替えロジック ---
-    tabButtons.addEventListener('click', (e) => {
+    
+    tabButtons.addEventListener('click', e => {
         if (e.target.matches('.tab-button')) {
-            const tabId = e.target.dataset.tab;
-            setActiveTab(tabId);
-            saveSettings(); // アクティブタブを保存
+            setActiveTab(e.target.dataset.tab);
+            saveSettings();
         }
     });
 
     function setActiveTab(tabId) {
-        tabButtons.querySelectorAll('.tab-button').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tab === tabId);
-        });
-        tabContents.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.toggle('active', content.dataset.tabContent === tabId);
-        });
+        tabButtons.querySelectorAll('.tab-button').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
+        tabContents.querySelectorAll('.tab-content').forEach(content => content.classList.toggle('active', content.dataset.tabContent === tabId));
     }
 
-    /**
-     * 指定されたタグのスタイルを更新し、CSS変数を設定する
-     * @param {string} tagName - 更新するタグ名
-     */
-    function updateStyle(tagName) {
+
+    // --- 統合されたスタイル適用関数 ---
+    function applyStylesToMessage(mesTextElement) {
+        if (!mesTextElement) return;
+
+        // 1. 静的スタイルのクラスをON/OFF
+        Object.keys(TAG_CONFIG).forEach(tagName => {
+            if (!TAG_CONFIG[tagName].isDynamic) {
+                const isEnabled = controls[tagName].enabledCheckbox.checked;
+                mesTextElement.classList.toggle(`style-${tagName}-enabled`, isEnabled);
+            }
+        });
+
+        // 2. 動的スタイルのためにHTMLを処理
+        if (!mesTextElement.dataset.originalHtml) {
+            mesTextElement.dataset.originalHtml = mesTextElement.innerHTML;
+        }
+        let currentHtml = mesTextElement.dataset.originalHtml;
+
+        if (controls['jp-space'].enabledCheckbox.checked) {
+            currentHtml = currentHtml.replace(/(>|^)([^<]*?)(　[^<]+?　)([^<]*?)(<|$)/g, '$1$2<span class="styled-jp-space">$3</span>$4$5');
+        }
+        if (controls['jp-quote'].enabledCheckbox.checked) {
+            currentHtml = currentHtml.replace(/(>|^)([^<]*?)(「[^」]+?」)([^<]*?)(<|$)/g, '$1$2<span class="styled-jp-quote">$3</span>$4$5');
+        }
+        
+        if (mesTextElement.innerHTML !== currentHtml) {
+            mesTextElement.innerHTML = currentHtml;
+        }
+    }
+
+    // --- コントロール変更時のメイン処理 ---
+    function updateStyleAndAllMessages(tagName) {
         const tagControls = controls[tagName];
         const rootStyle = document.documentElement.style;
+        const enabled = tagControls.enabledCheckbox.checked;
+        tagControls.content.classList.toggle('disabled', !enabled);
+        
+        // CSS変数を更新
+        if (enabled) {
+            const fontSize = parseInt(tagControls.fontSizeInput.value);
+            const fontWeight = parseInt(tagControls.fontWeightInput.value);
+            const lineHeight = parseFloat(tagControls.lineHeightInput.value);
+            const textColor = tagControls.textColorInput.value;
+            const outlineColor = tagControls.outlineColorInput.value;
+            const outlineWidth = parseFloat(tagControls.outlineWidthInput.value);
+            const textOpacity = parseFloat(tagControls.textOpacityInput.value) / 100;
+            
+            tagControls.fontSizeValue.textContent = fontSize;
+            tagControls.fontWeightValue.textContent = fontWeight;
+            tagControls.lineHeightValue.textContent = lineHeight.toFixed(1);
+            tagControls.outlineWidthValue.textContent = outlineWidth.toFixed(1);
+            tagControls.textOpacityValue.textContent = Math.round(textOpacity * 100);
 
-        const fontSize = parseInt(tagControls.fontSizeInput.value);
-        const fontWeight = parseInt(tagControls.fontWeightInput.value);
-        const lineHeight = parseFloat(tagControls.lineHeightInput.value);
-        const textColor = tagControls.textColorInput.value;
-        const outlineColor = tagControls.outlineColorInput.value;
-        const outlineWidth = parseFloat(tagControls.outlineWidthInput.value);
-        const textOpacity = parseFloat(tagControls.textOpacityInput.value) / 100;
-
-        tagControls.fontSizeValue.textContent = fontSize;
-        tagControls.fontWeightValue.textContent = fontWeight;
-        tagControls.lineHeightValue.textContent = lineHeight.toFixed(1);
-        tagControls.outlineWidthValue.textContent = outlineWidth.toFixed(1);
-        tagControls.textOpacityValue.textContent = Math.round(textOpacity * 100);
-
-        rootStyle.setProperty(`--${tagName}-font-size`, `${fontSize}%`);
-        rootStyle.setProperty(`--${tagName}-font-weight`, fontWeight);
-        rootStyle.setProperty(`--${tagName}-line-height`, lineHeight);
-        rootStyle.setProperty(`--${tagName}-text-rgb`, hexToRgb(textColor));
-        rootStyle.setProperty(`--${tagName}-text-opacity`, textOpacity);
-        rootStyle.setProperty(`--${tagName}-outline-width`, `${outlineWidth}px`);
-        rootStyle.setProperty(`--${tagName}-outline-rgb`, hexToRgb(outlineColor));
-
+            rootStyle.setProperty(`--${tagName}-font-size`, `${fontSize}%`);
+            rootStyle.setProperty(`--${tagName}-font-weight`, fontWeight);
+            rootStyle.setProperty(`--${tagName}-line-height`, lineHeight);
+            rootStyle.setProperty(`--${tagName}-text-rgb`, hexToRgb(textColor));
+            rootStyle.setProperty(`--${tagName}-text-opacity`, textOpacity);
+            rootStyle.setProperty(`--${tagName}-outline-width`, `${outlineWidth}px`);
+            rootStyle.setProperty(`--${tagName}-outline-rgb`, hexToRgb(outlineColor));
+        }
+        
+        // すべてのメッセージにスタイルを再適用
+        document.querySelectorAll('#chat .mes_text').forEach(applyStylesToMessage);
         saveSettings();
     }
-
+    
     function updateChatWindowOpacity() {
         const opacity = parseInt(controls.chatOpacityInput.value) / 100;
         controls.chatOpacityValue.textContent = controls.chatOpacityInput.value;
@@ -258,39 +260,60 @@ document.addEventListener('DOMContentLoaded', () => {
         saveSettings();
     }
 
+    // --- オブザーバーセットアップ ---
+    function setupObservers() {
+        if (chatObserver) chatObserver.disconnect();
+        const chatElement = document.getElementById('chat');
+        if (!chatElement) return;
+
+        chatObserver = new MutationObserver(mutations => {
+            for (const mutation of mutations) {
+                for (const node of mutation.addedNodes) {
+                    if (node.nodeType === 1) { // ELEMENT_NODE
+                        const targets = node.classList.contains('mes_text') ? [node] : node.querySelectorAll('.mes_text');
+                        targets.forEach(applyStylesToMessage);
+                    }
+                }
+            }
+        });
+        chatObserver.observe(chatElement, { childList: true, subtree: true });
+        console.log("チャット監視オブザーバーをセットアップしました。");
+    }
+    
+    // --- 設定の保存と復元 (バージョン更新 v6) ---
     function saveSettings() {
         const settings = {
             tags: {},
             chatWindowOpacity: parseFloat(controls.chatOpacityInput.value) / 100,
-            panelMinimized: panel.classList.contains('hidden'),
-            activeTab: tabButtons.querySelector('.tab-button.active').dataset.tab,
+            panelMinimized: panel.classList.contains("hidden"),
+            activeTab: tabButtons.querySelector(".tab-button.active")?.dataset.tab || "p",
         };
         Object.keys(TAG_CONFIG).forEach(tagName => {
-            const tagControls = controls[tagName];
+            const t = controls[tagName];
             settings.tags[tagName] = {
-                fontSize: parseInt(tagControls.fontSizeInput.value),
-                fontWeight: parseInt(tagControls.fontWeightInput.value),
-                lineHeight: parseFloat(tagControls.lineHeightInput.value),
-                textColor: tagControls.textColorInput.value,
-                outlineColor: tagControls.outlineColorInput.value,
-                outlineWidth: parseFloat(tagControls.outlineWidthInput.value),
-                textOpacity: parseFloat(tagControls.textOpacityInput.value) / 100,
+                enabled: t.enabledCheckbox.checked,
+                fontSize: parseInt(t.fontSizeInput.value),
+                fontWeight: parseInt(t.fontWeightInput.value),
+                lineHeight: parseFloat(t.lineHeightInput.value),
+                textColor: t.textColorInput.value,
+                outlineColor: t.outlineColorInput.value,
+                outlineWidth: parseFloat(t.outlineWidthInput.value),
+                textOpacity: parseFloat(t.textOpacityInput.value) / 100,
             };
         });
-        localStorage.setItem('textStylingSettings_v2', JSON.stringify(settings));
+        localStorage.setItem("textStylingSettings_v6", JSON.stringify(settings));
     }
 
     function restoreSettings() {
-        const saved = localStorage.getItem('textStylingSettings_v2');
+        const saved = localStorage.getItem('textStylingSettings_v6');
         if (saved) {
             try {
                 const settings = JSON.parse(saved);
-                
                 Object.keys(TAG_CONFIG).forEach(tagName => {
                     const savedTag = settings.tags?.[tagName] || {};
                     const defaultTag = TAG_CONFIG[tagName].defaults;
                     const tagControls = controls[tagName];
-
+                    tagControls.enabledCheckbox.checked = savedTag.enabled ?? defaultTag.enabled;
                     tagControls.fontSizeInput.value = savedTag.fontSize ?? defaultTag.fontSize;
                     tagControls.fontWeightInput.value = savedTag.fontWeight ?? defaultTag.fontWeight;
                     tagControls.lineHeightInput.value = savedTag.lineHeight ?? defaultTag.lineHeight;
@@ -299,13 +322,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     tagControls.outlineWidthInput.value = savedTag.outlineWidth ?? defaultTag.outlineWidth;
                     tagControls.textOpacityInput.value = Math.round((savedTag.textOpacity ?? defaultTag.textOpacity) * 100);
                 });
-
                 controls.chatOpacityInput.value = Math.round((settings.chatWindowOpacity ?? OTHER_DEFAULTS.chatWindowOpacity) * 100);
-                
-                if (settings.panelMinimized) panel.classList.add('hidden');
-                
+                if (settings.panelMinimized) {
+                    panel.classList.add('hidden');
+                }
                 setActiveTab(settings.activeTab || OTHER_DEFAULTS.activeTab);
-
             } catch (e) {
                 console.error('設定復元エラー:', e);
                 setDefaultSettings();
@@ -314,62 +335,64 @@ document.addEventListener('DOMContentLoaded', () => {
             setDefaultSettings();
         }
         
-        // 復元した設定をUIとCSSに一括反映
+        // 起動時にすべてのスタイルを適用
         const originalSave = saveSettings;
-        saveSettings = () => {}; // 反映中の不要な保存を抑制
-        Object.keys(TAG_CONFIG).forEach(tagName => updateStyle(tagName));
+        saveSettings = () => {}; // 復元中の不要な保存を抑制
+        Object.keys(TAG_CONFIG).forEach(tagName => updateStyleAndAllMessages(tagName));
         updateChatWindowOpacity();
         saveSettings = originalSave;
     }
 
     function setDefaultSettings() {
         Object.keys(TAG_CONFIG).forEach(tagName => {
-            const defaultTag = TAG_CONFIG[tagName].defaults;
+            const defaults = TAG_CONFIG[tagName].defaults;
             const tagControls = controls[tagName];
-            
-            tagControls.fontSizeInput.value = defaultTag.fontSize;
-            tagControls.fontWeightInput.value = defaultTag.fontWeight;
-            tagControls.lineHeightInput.value = defaultTag.lineHeight;
-            tagControls.textColorInput.value = defaultTag.textColor;
-            tagControls.outlineColorInput.value = defaultTag.outlineColor;
-            tagControls.outlineWidthInput.value = defaultTag.outlineWidth;
-            tagControls.textOpacityInput.value = Math.round(defaultTag.textOpacity * 100);
+            tagControls.enabledCheckbox.checked = defaults.enabled;
+            Object.keys(defaults).forEach(key => {
+                if (key !== "enabled") {
+                    const input = tagControls[key + "Input"] || tagControls[key];
+                    if (input) {
+                        if (key.includes("Color")) {
+                            input.value = defaults[key];
+                        } else if (key === "textOpacity") {
+                            input.value = defaults[key] * 100;
+                        } else {
+                            input.value = defaults[key];
+                        }
+                    }
+                }
+            });
         });
-        
         controls.chatOpacityInput.value = Math.round(OTHER_DEFAULTS.chatWindowOpacity * 100);
         panel.classList.remove('hidden');
         setActiveTab(OTHER_DEFAULTS.activeTab);
 
         const originalSave = saveSettings;
         saveSettings = () => {};
-        Object.keys(TAG_CONFIG).forEach(tagName => updateStyle(tagName));
+        Object.keys(TAG_CONFIG).forEach(tagName => updateStyleAndAllMessages(tagName));
         updateChatWindowOpacity();
         saveSettings = originalSave;
     }
 
-    // --- ウィンドウコントロール (変更なし) ---
-    const windowControlContainer = document.createElement('div');
-    windowControlContainer.id = 'window-control-buttons';
-    document.body.appendChild(windowControlContainer);
-    const centerButton = document.createElement('button');
-    centerButton.id = 'center-button';
-    centerButton.className = 'window-control-button';
-    centerButton.textContent = '中央';
-    windowControlContainer.appendChild(centerButton);
-    const rightHalfButton = document.createElement('button');
-    rightHalfButton.id = 'right-half-button';
-    rightHalfButton.className = 'window-control-button';
-    rightHalfButton.textContent = '右半分';
-    windowControlContainer.appendChild(rightHalfButton);
-
     // --- 初期化処理 ---
     setTimeout(() => {
-        console.log('初期化処理を開始');
-        const chatElement = document.getElementById('chat');
-        if (chatElement) {
-            const chatBgColor = getComputedStyle(chatElement).backgroundColor;
-            document.documentElement.style.setProperty('--chat-bg-rgb', hexToRgb(chatBgColor));
-        }
+        console.log('拡張機能の初期化処理を開始');
+        
+        const windowControlContainer = document.createElement('div');
+        windowControlContainer.id = 'window-control-buttons';
+        document.body.appendChild(windowControlContainer);
+
+        const centerButton = document.createElement('button');
+        centerButton.id = 'center-button';
+        centerButton.className = 'window-control-button';
+        centerButton.textContent = '中央';
+        windowControlContainer.appendChild(centerButton);
+
+        const rightHalfButton = document.createElement('button');
+        rightHalfButton.id = 'right-half-button';
+        rightHalfButton.className = 'window-control-button';
+        rightHalfButton.textContent = '右半分';
+        windowControlContainer.appendChild(rightHalfButton);
 
         const sheld = document.getElementById('sheld');
         const sheldheader = document.getElementById('sheldheader');
@@ -388,25 +411,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 sheld.style.width = '50vw';
                 sheld.style.margin = 'unset';
             });
-
             const topLimit = 35;
             sheldheader.addEventListener('mousedown', () => {
                 sheld.style.resize = 'both';
                 const onMouseUp = () => {
                     requestAnimationFrame(() => {
-                        const currentTop = parseFloat(sheld.style.top);
-                        if (!isNaN(currentTop) && currentTop < topLimit) {
+                        const top = parseFloat(sheld.style.top);
+                        if (!isNaN(top) && top < topLimit) {
                             sheld.style.top = `${topLimit}px`;
                         }
                     });
                 };
                 document.addEventListener('mouseup', onMouseUp, { once: true });
             });
-            console.log('チャットウィンドウのドラッグ終了時位置補正を有効化しました。');
-        } else {
-            console.error('チャットウィンドウの要素 (#sheld または #sheldheader) が見つかりませんでした。');
         }
         
         restoreSettings();
+        setupObservers();
     }, 500);
 });
