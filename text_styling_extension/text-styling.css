@@ -26,33 +26,6 @@
     --em-outline-width: 1px;
     --em-outline-rgb: 0, 0, 0;
 
-    /* strong タグ用変数 */
-    --strong-font-size: 200%;
-    --strong-font-weight: 700;
-    --strong-line-height: 1.3;
-    --strong-text-rgb: 255, 255, 255;
-    --strong-text-opacity: 1;
-    --strong-outline-width: 1px;
-    --strong-outline-rgb: 0, 0, 0;
-
-    /* 鉤括弧「」用変数 */
-    --jp-quote-font-size: 100%;
-    --jp-quote-font-weight: 400;
-    --jp-quote-line-height: 1.5;
-    --jp-quote-text-rgb: 255, 255, 120;
-    --jp-quote-text-opacity: 1;
-    --jp-quote-outline-width: 1px;
-    --jp-quote-outline-rgb: 0, 0, 0;
-    
-    /* 全角スペース囲み用変数 */
-    --jp-space-font-size: 100%;
-    --jp-space-font-weight: 400;
-    --jp-space-line-height: 1.5;
-    --jp-space-text-rgb: 173, 216, 230;
-    --jp-space-text-opacity: 1;
-    --jp-space-outline-width: 1px;
-    --jp-space-outline-rgb: 0, 0, 0;
-
     /* チャットウィンドウ用変数 */
     --chat-opacity: 1;
     --chat-bg-rgb: 0, 0, 0;
@@ -60,7 +33,7 @@
 
 #text-styling-panel {
     position: fixed;
-    top: 250px;
+    top: 400px;
     left: 10px;
     width: 480px;
     min-height: 200px;
@@ -248,37 +221,6 @@
     line-height: var(--em-line-height) !important;
     -webkit-text-stroke-width: var(--em-outline-width);
     -webkit-text-stroke-color: rgba(var(--em-outline-rgb), var(--em-text-opacity));
-    paint-order: stroke fill;
-}
-
-#chat .mes_text.style-strong-enabled strong {
-    color: rgba(var(--strong-text-rgb), var(--strong-text-opacity)) !important;
-    font-size: var(--strong-font-size) !important;
-    font-weight: var(--strong-font-weight) !important;
-    line-height: var(--strong-line-height) !important;
-    -webkit-text-stroke-width: var(--strong-outline-width);
-    -webkit-text-stroke-color: rgba(var(--strong-outline-rgb), var(--strong-text-opacity));
-    paint-order: stroke fill;
-}
-
-/* JSによって追加される動的スタイル */
-#chat .mes_text .styled-jp-quote {
-    color: rgba(var(--jp-quote-text-rgb), var(--jp-quote-text-opacity)) !important;
-    font-size: var(--jp-quote-font-size) !important;
-    font-weight: var(--jp-quote-font-weight) !important;
-    line-height: var(--jp-quote-line-height) !important;
-    -webkit-text-stroke-width: var(--jp-quote-outline-width);
-    -webkit-text-stroke-color: rgba(var(--jp-quote-outline-rgb), var(--jp-quote-text-opacity));
-    paint-order: stroke fill;
-}
-
-#chat .mes_text .styled-jp-space {
-    color: rgba(var(--jp-space-text-rgb), var(--jp-space-text-opacity)) !important;
-    font-size: var(--jp-space-font-size) !important;
-    font-weight: var(--jp-space-font-weight) !important;
-    line-height: var(--jp-space-line-height) !important;
-    -webkit-text-stroke-width: var(--jp-space-outline-width);
-    -webkit-text-stroke-color: rgba(var(--jp-space-outline-rgb), var(--jp-space-text-opacity));
     paint-order: stroke fill;
 }
 
