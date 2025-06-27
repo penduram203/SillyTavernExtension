@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('テキストスタイル拡張機能 v6: 初期化開始');
+    console.log('テキストスタイル拡張機能 v6-modified: 初期化開始');
 
     const TAG_CONFIG = {
         p: {
@@ -16,21 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
             label: '<em>',
             isDynamic: false,
             defaults: { enabled: true, fontSize: 100, fontWeight: 400, textColor: '#dddddd', outlineColor: '#000000', outlineWidth: 1, lineHeight: 1.5, textOpacity: 1.0 }
-        },
-        strong: {
-            label: '<strong>',
-            isDynamic: false,
-            defaults: { enabled: true, fontSize: 200, fontWeight: 700, textColor: '#ffffff', outlineColor: '#000000', outlineWidth: 1, lineHeight: 1.3, textOpacity: 1.0 }
-        },
-        'jp-quote': {
-            label: '「」鉤括弧',
-            isDynamic: true,
-            defaults: { enabled: true, fontSize: 100, fontWeight: 400, textColor: '#ffff78', outlineColor: '#000000', outlineWidth: 1, lineHeight: 1.5, textOpacity: 1.0 }
-        },
-        'jp-space': {
-            label: '　囲み',
-            isDynamic: true,
-            defaults: { enabled: true, fontSize: 100, fontWeight: 400, textColor: '#add8e6', outlineColor: '#000000', outlineWidth: 1, lineHeight: 1.5, textOpacity: 1.0 }
         }
     };
     const OTHER_DEFAULTS = {
@@ -190,30 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyStylesToMessage(mesTextElement) {
         if (!mesTextElement) return;
 
-        // 1. 静的スタイルのクラスをON/OFF
+        // 静的スタイルのクラスをON/OFF
         Object.keys(TAG_CONFIG).forEach(tagName => {
             if (!TAG_CONFIG[tagName].isDynamic) {
                 const isEnabled = controls[tagName].enabledCheckbox.checked;
                 mesTextElement.classList.toggle(`style-${tagName}-enabled`, isEnabled);
             }
         });
-
-        // 2. 動的スタイルのためにHTMLを処理
-        if (!mesTextElement.dataset.originalHtml) {
-            mesTextElement.dataset.originalHtml = mesTextElement.innerHTML;
-        }
-        let currentHtml = mesTextElement.dataset.originalHtml;
-
-        if (controls['jp-space'].enabledCheckbox.checked) {
-            currentHtml = currentHtml.replace(/(>|^)([^<]*?)(　[^<]+?　)([^<]*?)(<|$)/g, '$1$2<span class="styled-jp-space">$3</span>$4$5');
-        }
-        if (controls['jp-quote'].enabledCheckbox.checked) {
-            currentHtml = currentHtml.replace(/(>|^)([^<]*?)(「[^」]+?」)([^<]*?)(<|$)/g, '$1$2<span class="styled-jp-quote">$3</span>$4$5');
-        }
-        
-        if (mesTextElement.innerHTML !== currentHtml) {
-            mesTextElement.innerHTML = currentHtml;
-        }
     }
 
     // --- コントロール変更時のメイン処理 ---
@@ -301,11 +269,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 textOpacity: parseFloat(t.textOpacityInput.value) / 100,
             };
         });
-        localStorage.setItem("textStylingSettings_v6", JSON.stringify(settings));
+        localStorage.setItem("textStylingSettings_v6_modified", JSON.stringify(settings));
     }
 
     function restoreSettings() {
-        const saved = localStorage.getItem('textStylingSettings_v6');
+        const saved = localStorage.getItem('textStylingSettings_v6_modified');
         if (saved) {
             try {
                 const settings = JSON.parse(saved);
