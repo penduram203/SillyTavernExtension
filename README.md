@@ -41,8 +41,19 @@ image-displayに関してはキーワードファイルの設定が必要です<
 <br>
 # image-display
 背景とは別に画像表示ウインドウを用意し、ユーザーが入力したキーワードに応じて画像を自動的に切り替える機能です<br>
-まず**SillyTavern/public/scripts/extensions/image_display_extension/character_image_mapping**を開き<br>
-中に入っている**sample.json**をテキストエディタで開きます
+<br>
+![](https://files.catbox.moe/e6n5w8.png)<br>
+<br>
+画面左下に殆ど透明な3つのボタンがあります<br>
+「カスタムボタン」を押すとパネルが開いてウインドウの位置とサイズを自由に調整出来ます<br>
+マウスでウインドウの端を直接ドラッグしても位置とサイズを自由に変更出来ます<br>
+「最大化ボタン」を押すとウインドウが最大サイズに引き伸ばされます<br>
+「左半分ボタン」を押すとウインドウが画面の左半分に寄ります<br>
+<br>
+<br>
+次に画像の自動変更の説明です<br>
+**SillyTavern/public/scripts/extensions/image_display_extension/character_image_mapping**を開くと<br>
+中に**sample.json**というJSONファイルが入っているのでテキストエディタで開きます
 ```
 {
     "山": "https://files.catbox.moe/fnbsc1.png",
@@ -52,13 +63,27 @@ image-displayに関してはキーワードファイルの設定が必要です<
 }
 ```
 JSONファイルは上記のような構造になっています<br>
-「”」で囲まれた、”山”や”川”といった単語がチャット欄に入力されると<br>
+「"」で囲まれた、"山"や"川"といった単語がチャット欄に入力されると<br>
 単語と関連したアドレスの画像が画像表示ウインドウに表示されます<br>
+単語が何も入力されていない場合は"default"のアドレスの画像が表示されます<br>
+アドレス欄は自分で自由に変更して下さい<br>
 <br>
 ![](https://files.catbox.moe/izaf0p.png)<br>
 <br>
-あｄふぁ
-
+次に**sample.json**のファイル名を変更してキャラクター毎に対応させます<br>
+JSONファイルは画像と単語の組み合わせ情報なので、キャラの数だけJSONファイルが必要です<br>
+<br>
+![](https://files.catbox.moe/j8vxgd.png)<br>
+<br>
+①画面右上のキャラクター管理アイコンをクリックして<br>
+②その下のキャラ選択アイコンをクリック<br>
+③一覧表示されるキャラの名前と同じファイル名のJSONファイルを作る<br>
+<br>
+![](https://files.catbox.moe/1k72ko.png)<br>
+<br>
+これでキャラが選択されると自動的にJSONファイルが読み込まれ<br>
+自動的に単語と結びつく画像が表示されます<br>
+<br>
 # chat-window-onoff<br>
 チャットウインドウの表示と非表示を切り替えれるようになります<br>
 <br>
