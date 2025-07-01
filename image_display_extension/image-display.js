@@ -397,6 +397,41 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
+    // ★★★ 変更点 ★★★: 再帰的に 'image_display_extension' を探すヘルパー関数を追加
+    /**
+     * @summary JSONオブジェクト内を再帰的に探索し、'image_display_extension' キーを持つオブジェクトを返す
+     * @param {any} data - 探索対象のオブジェクトまたは配列
+     * @returns {object|null} - 見つかった画像マップオブジェクト、またはnull
+     */
+    function findImageMapInData(data) {
+        if (data === null || typeof data !== 'object') {
+            return null;
+        }
+
+        // キー 'image_display_extension' が現在の階層に存在するかチェック
+        if (data.hasOwnProperty('image_display_extension')) {
+            const potentialMap = data.image_display_extension;
+            // 値がnullでなく、オブジェクト形式であることを確認
+            if (typeof potentialMap === 'object' && potentialMap !== null) {
+                console.log("✅ 再帰探索により 'image_display_extension' を発見しました。");
+                return potentialMap;
+            }
+        }
+
+        // 子要素を再帰的に探索
+        for (const key in data) {
+            if (data.hasOwnProperty(key)) {
+                const result = findImageMapInData(data[key]);
+                if (result !== null) {
+                    return result; // 最初に見つかったものを返す
+                }
+            }
+        }
+
+        return null; // 見つからなかった場合
+    }
+
+    // ★★★ 変更点 ★★★: `getCharacterData` 関数を新旧両方のJSON形式に対応させる
     // `context`とローカルファイルの両方から画像マップを取得する安定版
     async function getCharacterData(characterName) {
         // SillyTavernの内部データが準備完了するのを待つ
@@ -422,8 +457,20 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`scripts/extensions/image_display_extension/character_image_mapping/${characterName}.json`);
             if (response.ok) {
-                console.log(`✅ 拡張機能のローカルマッピングを読み込みました: ${characterName}`);
-                return await response.json();
+                const jsonData = await response.json();
+                
+                // まず、ネストされた 'image_display_extension' を探す（新形式対応）
+                const foundMap = findImageMapInData(jsonData);
+                
+                if (foundMap) {
+                    // 新しい形式（キャラクターカードなど）から抽出成功
+                    console.log(`✅ 拡張機能のローカルマッピングを読み込みました (キャラクターカード形式): ${characterName}`);
+                    return foundMap;
+                } else {
+                    // 'image_display_extension' が見つからなければ、ファイル全体が画像マップだと仮定する（従来形式対応）
+                    console.log(`✅ 拡張機能のローカルマッピングを読み込みました (従来形式): ${characterName}`);
+                    return jsonData;
+                }
             }
         } catch (e) { /* エラーは無視 */ }
 
