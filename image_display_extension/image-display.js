@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // ローカルファイルを取得
         try {
-            const response = await fetch(`addchara/${characterName}.json`);
+            const response = await fetch(`scripts/extensions/image_display_extension/character_image_mapping/${characterName}.json`);
             if (response.ok) {
                 const jsonData = await response.json();
                 
