@@ -8,9 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
         DEFAULT_TOP = 100,
         DEFAULT_BG_COLOR = '#000000';
     const defaultImageMap = {
-        "海": "https://files.catbox.moe/ar7sly.png",
-        "山|山頂|山脈": "https://files.catbox.moe/g7qyus.png",
-        "0001|０００１": "https://files.catbox.moe/l81266.png",
         "default": "https://files.catbox.moe/if6r9w.png"
     };
     let currentCharacter = null,
