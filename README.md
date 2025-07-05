@@ -8,11 +8,8 @@ SillyTavernの拡張機能です<br>
 ![](https://files.catbox.moe/0uhqi3.png)
 <br>
 <br>
-ZIPファイルを解凍すると「chat_window_onoff」「image_display_extension」「text_styling_extension」の３つのフォルダが出来るので
-その３つのフォルダを**SillyTavern/public/scripts/extensions**の中に入れる<br>
-<br>
-![](https://files.catbox.moe/jsw0ne.png)
-<br>
+ZIPファイルを解凍すると「chat_window_onoff」「image_display_extension」「text_styling_extension」「right_nav_kai」の４つのフォルダが出来るので
+その４つのフォルダを**SillyTavern/public/scripts/extensions**の中に入れる<br>
 <br>
 次に**SillyTavern/public**の中にある**index.html**をテキスト閲覧ソフトで編集する<br>
 <br>
