@@ -153,68 +153,125 @@ JSON内部のファイル名と画像ファイルの名前さえ一致すれば�
 「最大化ボタン」を押すとウインドウが最大サイズに引き伸ばされます<br>
 「左半分ボタン」を押すとウインドウが画面の左半分に寄ります<br>
 <br>
-<br>
 ### 画像の自動変更<br>
-image-displayには画像の自動変更機能がありますが、これを機能させる為にいくつか設定が必要です。<br>
-
-中に**sample.json**というJSONファイルが入っているのでテキストエディタで開きます
+image-displayには画像の自動変更機能がありますが、これを機能させる為にいくつか設定が必要です<br>
+JSONファイルを用意するまでは①right_nav_kaiと同じなのでそちらを参考にして下さい<br>
+<br>
+まずインストール時に作った「addchara」フォルダを開き、「キャラクター名」フォルダを新規作成し、<br>
+その中に「キャラクター名.json」ファイルを新規作成します<br>
+フォルダ構成は　**SillyTavern/public/addchara/キャラクター名/キャラクター名.json**　です<br>
+キャラクター名のフォルダやJSONファイルが既に存在する場合は新規作成の必要はありません<br>
+ここまではright_nav_kaiの解説と同じです<br>
+<br>
+以下の内容もright_nav_kaiの解説と似ています<br>
+### ケース①新規にJSONファイルを作った場合
+新規作成の場合のJSONファイルは単純な構造です<br>
+白紙の新規JSONファイルを開いたら以下のように書き込んで保存し、<br>
+実際に下記に従って画像ファイルをaddchara/キャラクター名/の中に配置しSillyTavernを再起動します<br>
 ```
 {
-    "山": "https://files.catbox.moe/fnbsc1.png",
-    "川": "https://files.catbox.moe/8xv1lx.png",
-    "町": "https://files.catbox.moe/gci6w9.png",
-    "default": "https://files.catbox.moe/94yxhd.png"
+    "image_display_extension":{
+    "山": "addchara/キャラクター名/適当なファイル名1.png",
+    "川": "addchara/キャラクター名/適当なファイル名2.png",
+    "町": "addchara/キャラクター名/適当なファイル名3.png",
+    "default": "addchara/キャラクター名/適当なファイル名0.png"
+    }
 }
 ```
-JSONファイルは上記のような構造になっています<br>
+チャット開始時にはデフォルト状態の「適当なファイル名0.png」が表示され<br>
 「"」で囲まれた、"山"や"川"といった単語がチャット欄に入力されると<br>
 単語と関連したアドレスの画像が画像表示ウインドウに表示されます<br>
-単語が何も入力されていない場合は"default"のアドレスの画像が表示されます<br>
-アドレス欄は自分で自由に変更して下さい<br>
-```
-
-この⇩ように入力すると「町」「街」「マチ」「まち」４つの単語全てに反応します
-
-"町|街|マチ|まち": "https://files.catbox.moe/gci6w9.png",
-```
-<br>
-
 ![](https://files.catbox.moe/izaf0p.png)<br>
 <br>
-次に**sample.json**のファイル名を変更してキャラクター毎に対応させます<br>
-JSONファイルは画像と単語の組み合わせ情報なので、キャラの数だけJSONファイルが必要です<br>
-<br>
-![](https://files.catbox.moe/j8vxgd.png)<br>
-<br>
-①画面右上のキャラクター管理アイコンをクリックして<br>
-②その下のキャラ選択アイコンをクリック<br>
-③一覧表示されるキャラの名前と同じファイル名のJSONファイルを用意する<br>
-（ユーザーが用意するのは面倒でしょうから、キャラ作者側が用意しておけば便利）<br>
-<br>
-![](https://files.catbox.moe/1k72ko.png)<br>
-<br>
-例えばMayaとYuzukiというキャラを加えるなら
 ```
-Maya.jsonの中身
+この⇩ように入力すると「町」「街」「マチ」「まち」４つの単語全てに反応します
+
+"町|街|マチ|まち": "addchara/キャラクター名/適当なファイル名.png",
+```
+キャラ名やアドレス欄は自分で自由に変更して下さい<br>
+キーワードもキャラ名も画像ファイル名も自由ですが、キャラ名は実際のフォルダ名と一致させて下さい
+```
 {
-    "選択肢１": "ユーザーが適当に決めたアップローダーの適当なアドレス１",
-    "選択肢２": "ユーザーが適当に決めたアップローダーの適当なアドレス２",
-    "選択肢３": "ユーザーが適当に決めたアップローダーの適当なアドレス３",
-    "default": "ユーザーが適当に決めたアップローダーの適当なアドレス４"
+    "image_display_extension":{
+    "ダンジョン１階": "addchara/RPG風味/CG001.png",
+    "ダンジョン２階": "addchara/RPG風味/CG002.png",
+    "街の宿屋": "addchara/RPG風味/CG003.png",
+    "default": "addchara/RPG風味/default.png"
+    }
 }
 ```
+例えば上記の構成なら「RPG風味」というフォルダ内にキャラクター名.jsonと画像ファイルを全て置いて下さい<br>
+![](https://files.catbox.moe/5i2aad.png)<br>
+<br>
+下記のようにimage_displayとright_nav_kaiの２つの情報を一括で記述することも出来ます
+慣れてきたら下記のように一気に記述しましょう
 ```
-Yuzuki.jsonの中身
 {
-    "右に避ける": "ユーザーが適当に決めたアップローダーの適当なアドレス５",
-    "左に避ける": "ユーザーが適当に決めたアップローダーの適当なアドレス６",
-    "default": "ユーザーが適当に決めたアップローダーの適当なアドレス７"
+    "image_display_extension":{
+    "ダンジョン１階": "addchara/RPG風味/CG001.png",
+    "ダンジョン２階": "addchara/RPG風味/CG002.png",
+    "街の宿屋": "addchara/RPG風味/CG003.png",
+    "default": "addchara/RPG風味/default.png",
+    "thumbnail": "addchara/RPG風味/thumbnail.png"
+    }
 }
 ```
+### ケース②既にJSONファイルがあり、複雑な構成になっている場合
+chub.aiなどからインポートしたキャラや編集中の自作キャラなどの場合はJSONの構造が複雑な場合があります<br>
+JSONファイルを開いて下の方までスクロールすると以下のようなコードが書かれているので
+```
+        "post_history_instructions": "",
+        "tags": [],
+        "creator": "",
+        "character_version": "",
+        "alternate_greetings": [],
+        "extensions": {
+            "talkativeness": "0.5",
+            "fav": false,
+            "world": "",
+            "depth_prompt": {
+                "prompt": "",
+                "depth": 4,
+                "role": "system"
+            }
+        },
+        "group_only_greetings": []
+    },
+    "create_date": "2025-7-1 @16h 12m 16s 315ms"
+}
+```
+次のように書き換えましょう。「,」や「{}」の位置に注意して下さい
+```
+        "post_history_instructions": "",
+        "tags": [],
+        "creator": "",
+        "character_version": "",
+        "alternate_greetings": [],
+        "extensions": {
+            "talkativeness": "0.5",
+            "fav": false,
+            "world": "",
+            "depth_prompt": {
+                "prompt": "",
+                "depth": 4,
+                "role": "system"
+            },
+            "image_display_extension": {
+                "thumbnail": "addchara/キャラクター名/適当なファイル名.png"
+            }
+        },
+        "group_only_greetings": []
+    },
+    "create_date": "2025-7-1 @16h 12m 16s 315ms"
+}
+```
+
+
+
 という具合にキャラ名.jsonファイルの中身はユーザーが自由に編集出来ます<br>
 ```
-sugoiRPG.jsonの中身
 {
+    "image_display_extension":{
     "シーン00": "適当アドレス00",
     "シーン01": "適当アドレス01",
     "シーン02": "適当アドレス02",
@@ -230,6 +287,7 @@ sugoiRPG.jsonの中身
     "シーン12": "適当アドレス12",
     "シーン13": "適当アドレス13",
     "default": "適当アドレス"
+    }
 }
 ```
 シーンとアドレスの数を増やせば上記のように大量のCGを管理する事も出来ます<br>
