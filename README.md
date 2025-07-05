@@ -8,17 +8,20 @@ SillyTavernの拡張機能です<br>
 ![](https://files.catbox.moe/0uhqi3.png)
 <br>
 <br>
-ZIPファイルを解凍すると「chat_window_onoff」「image_display_extension」「text_styling_extension」「right_nav_kai」の４つのフォルダが出来るので
-その４つのフォルダを**SillyTavern/public/scripts/extensions**の中に入れる<br>
-<br>
-次に**SillyTavern/public**の中にある**index.html**をテキスト閲覧ソフトで編集する<br>
+ZIPを解凍すると「chat_window_onoff」「image_display_extension」「text_styling_extension」「right_nav_kai」の<br>
+４つのフォルダが出来るので、４つ全て**SillyTavern/public/scripts/extensions**の中に入れる<br>
 <br>
 ![](https://files.catbox.moe/oaolvu.png)
 <br>
+次に**SillyTavern/public**の中にある**index.html**をテキスト閲覧ソフトで編集する<br>
+<br>
 ![](https://files.catbox.moe/ksuyjb.png)
 ```
+上から４５〜５０行目辺りにある
 <link rel="icon" type="image/x-icon" href="favicon.ico"> の行と
 "<!-- Scripts are loaded at the end of the body to improve page load speed --> の行の間に
+
+
 
 <link rel="stylesheet" href="scripts/extensions/image_display_extension/image-display.css">
 <script src="scripts/extensions/image_display_extension/image-display.js"></script>
@@ -26,8 +29,10 @@ ZIPファイルを解凍すると「chat_window_onoff」「image_display_extensi
 <script src="scripts/extensions/text_styling_extension/text-styling.js" defer></script>
 <link rel="stylesheet" href="scripts/extensions/chat_window_onoff/chat_window_onoff.css">
 <script src="scripts/extensions/chat_window_onoff/chat_window_onoff.js"></script>
+<link rel="stylesheet" href="scripts/extensions/right_nav_kai/right_nav_kai.css">
+<script src="scripts/extensions/right_nav_kai/right_nav_kai.js"></script>
 
-⇧の６行を追記する
+⇧の８行を追記する
 ```
 ![](https://files.catbox.moe/cqdh2b.png)
 <br>
