@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         DEFAULT_TOP = 100,
         DEFAULT_BG_COLOR = '#000000';
     const defaultImageMap = {
-        "default": "https://files.catbox.moe/if6r9w.png"
+        "default": "addchara/default.png"
     };
     let currentCharacter = null,
         currentImageMap = defaultImageMap,
@@ -452,7 +452,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // ローカルファイルを取得
         try {
-            const response = await fetch(`scripts/extensions/image_display_extension/character_image_mapping/${characterName}.json`);
+            // ★★★ 変更点: JSONファイルのパスを修正 ★★★
+            const response = await fetch(`addchara/${characterName}/${characterName}.json`);
             if (response.ok) {
                 const jsonData = await response.json();
                 
