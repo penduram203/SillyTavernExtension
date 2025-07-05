@@ -6,8 +6,7 @@ SillyTavernの拡張機能です<br>
 「<> code」をクリックしてから「Download ZIP」をクリックしてファイルをダウンロード<br>
 ![](https://files.catbox.moe/0uhqi3.png)<br>
 <br>
-ZIPを解凍して出来る「chat_window_onoff」「image_display_extension」「text_styling_extension」「right_nav_kai」の４つを、<br>
-全て**SillyTavern/public/scripts/extensions**の中に入れる<br>
+ZIPを解凍して出来る①「right_nav_kai」②「image_display_extension」③「chat_window_onoff」④「text_styling_extension」の４つを、全て**SillyTavern/public/scripts/extensions**の中に入れる<br>
 ![](https://files.catbox.moe/kx5pck.png)<br>
 <br>
 次に**SillyTavern/public**の中にある**index.html**をテキスト閲覧ソフトで編集する<br>
@@ -30,17 +29,117 @@ ZIPを解凍して出来る「chat_window_onoff」「image_display_extension」�
 <link rel="stylesheet" href="scripts/extensions/right_nav_kai/right_nav_kai.css">
 <script src="scripts/extensions/right_nav_kai/right_nav_kai.js"></script>
 
-⇧の８行を追記する
+⇧の８行を追記して保存
 ```
 ![](https://files.catbox.moe/ksuyjb.png)
 ![](https://files.catbox.moe/vt3zo4.png)
 <br>
 <br>
-これでインストールは完了です<br>
-chat-window-onoffとtext_styling_extensionとright_nav_kaiはそのまま使えますが<br>
-image-displayに関してはキーワードファイルの設定が必要です<br>
+最後にSillyTavern/publicの中に「addchara」という名前の新規フォルダを作成します
+![](https://files.catbox.moe/f3k0r6.png)<br>
 <br>
-# image-display
+これでインストールは完了です<br>
+chat-window-onoffとtext_styling_extensionはそのまま使えますが<br>
+right_nav_kaiとimage-displayに関しては追加設定が必要です<br>
+<br>
+# ①right_nav_kai
+画面右上のキャラクター管理パネルのUIを変更します<br>
+単にキャラ画像を大きく表示するだけの拡張機能ですが画像を変更するには設定が必要です<br>
+ただしキャラ作者が予め設定しておけばユーザー側は設定不要です
+![](https://files.catbox.moe/ngee0a.png)<br>
+<br>
+まず画像を変更したいキャラクター名を把握し、<br>
+次にインストール時に作った「addchara」フォルダ内に、「キャラクター名」フォルダを作ります<br>
+例えばCerebryxという名前のキャラクターの画像を変更したい時はCerebryxという名前の新規フォルダを作ります<br>
+既にキャラ名のフォルダが存在する場合は新規作成しなくていいです<br>
+![](https://files.catbox.moe/vb1ntj.png)<br>
+<br>
+次に「キャラクター名」フォルダの中に「キャラクター名」テキストファイルを新規作成し、拡張子をtxtからjsonに変えます<br>
+CerebryxというキャラならCerebryx.txtというファイルを作り、拡張子をjsonに変更し、Cerebryx.jsonというJSONファイルを作ります<br>
+この時点でフォルダ構成は **SillyTavern/public/addchara/キャラクター名/キャラクター名.json** となっているはずです<br>
+既にキャラ名のJSONファイルが存在する場合は新規作成しなくていいです<br>
+![](https://files.catbox.moe/j57nud.png)<br>
+### ケース①新規にJSONファイルを作った場合
+新規作成の場合のJSONファイルは単純な構造です<br>
+白紙の新規JSONファイルを開いたら以下のように書き込んで保存します
+```
+{
+    "image_display_extension":{
+    "thumbnail": "addchara/キャラクター名/適当なファイル名.png"
+    }
+}
+```
+Cerebryxというキャラなら以下のように書き込んで保存します
+```
+{
+    "image_display_extension":{
+    "thumbnail": "addchara/Cerebryx/適当なファイル名.png"
+    }
+}
+```
+### ケース②既にJSONファイルがあり、複雑な構成になっている場合
+chub.aiなどからインポートしたキャラや編集中の自作キャラなどの場合はJSONの構造が複雑な場合があります<br>
+JSONファイルを開いて下の方までスクロールすると以下のようなコードが書かれているので
+```
+        "post_history_instructions": "",
+        "tags": [],
+        "creator": "",
+        "character_version": "",
+        "alternate_greetings": [],
+        "extensions": {
+            "talkativeness": "0.5",
+            "fav": false,
+            "world": "",
+            "depth_prompt": {
+                "prompt": "",
+                "depth": 4,
+                "role": "system"
+            }
+        },
+        "group_only_greetings": []
+    },
+    "create_date": "2025-7-1 @16h 12m 16s 315ms"
+}
+```
+次のように書き換えましょう。「,」や「{}」の位置に注意して下さい
+```
+        "post_history_instructions": "",
+        "tags": [],
+        "creator": "",
+        "character_version": "",
+        "alternate_greetings": [],
+        "extensions": {
+            "talkativeness": "0.5",
+            "fav": false,
+            "world": "",
+            "depth_prompt": {
+                "prompt": "",
+                "depth": 4,
+                "role": "system"
+            },
+            "image_display_extension": {
+                "thumbnail": "addchara/キャラクター名/適当なファイル名.png"
+            }
+        },
+        "group_only_greetings": []
+    },
+    "create_date": "2025-7-1 @16h 12m 16s 315ms"
+}
+```
+次にJSONファイル内に書かれたファイル名と同じ名前の画像ファイルを用意します<br>
+これが実際に表示される画像ファイルです<br>
+「適当なファイル名」の部分は本当に適当にどんな名前でもいいです<br>
+JSON内部のファイル名と画像ファイルの名前さえ一致すればいいので<br>
+「tekitou.png」や「イベントCG_001.png」とかでも構いません<br>
+![](https://files.catbox.moe/0mml32.png)
+<br>
+この状態でSillyTavernを再起動し、キャラクター選択パネルを開くと画像が更新されています<br>
+![](https://files.catbox.moe/11n54n.png)<br>
+<br>
+以上で説明は終了です。<br>
+なお、ちゃんと設定したのに画質が凄く粗い場合は「小さなサムネ画像が無理に引き伸ばされて表示されている」だけで<br>
+それは設定をミスしているか、最初から設定されていないかのどちらかです。
+# ②image-display
 背景とは別に画像表示ウインドウを用意し、ユーザーが入力したキーワードに応じて画像を自動的に切り替える機能です<br>
 <br>
 ![](https://files.catbox.moe/e6n5w8.png)<br>
@@ -52,8 +151,9 @@ image-displayに関してはキーワードファイルの設定が必要です<
 「左半分ボタン」を押すとウインドウが画面の左半分に寄ります<br>
 <br>
 <br>
-次に画像の自動変更の説明です<br>
-**SillyTavern/public/scripts/extensions/image_display_extension/character_image_mapping**を開くと<br>
+### 画像の自動変更<br>
+image-displayには画像の自動変更機能がありますが、これを機能させる為にいくつか設定が必要です。<br>
+
 中に**sample.json**というJSONファイルが入っているのでテキストエディタで開きます
 ```
 {
@@ -143,7 +243,7 @@ sugoiRPG.jsonの中身
 ### ユーザー側は手間要らずで画像自動切り替え機能付きのAIチャットを楽しめるはずですから、それを推奨します <br>
 <br>
 
-# chat-window-onoff<br>
+# ③chat-window-onoff<br>
 チャットウインドウの表示と非表示を切り替えれるようになります<br>
 <br>
 ![](https://files.catbox.moe/q4zf8w.png)<br>
@@ -151,7 +251,7 @@ sugoiRPG.jsonの中身
 画面左下にある殆ど透明な💡電球のアイコンをクリックするとチャットウインドウが隠れます<br>
 💡電球アイコンをもう一度クリックするとチャットウインドウが再び表示されます<br>
 <br>
-# text_styling_extension<br>
+# ④text_styling_extension<br>
 左下の⚙歯車アイコンをクリックすると操作パネルが開きます<br>
 パネルを操作することで文字のサイズや色をタグ別に調整することが出来ます<br>
 タグは<p、<q、<emの3種類あり、
