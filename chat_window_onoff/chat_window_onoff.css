@@ -29,7 +29,7 @@
 /* ボタンがアクティブ（チャット透過中）な時のスタイル */
 #toggle-chat-button.active {
     background-color: #000000;
-    opacity: 0.0;
+    opacity: 0.1;
 }
 
 /* --- ここからが変更箇所 --- */
