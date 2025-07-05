@@ -4,18 +4,16 @@ SillyTavernの拡張機能です<br>
 まず　https://github.com/penduram203/SillyTavernExtension/tree/main
 にアクセスし、<br>
 「<> code」をクリックしてから「Download ZIP」をクリックしてファイルをダウンロード<br>
+![](https://files.catbox.moe/0uhqi3.png)<br>
 <br>
-![](https://files.catbox.moe/0uhqi3.png)
-<br>
-<br>
-ZIPを解凍すると「chat_window_onoff」「image_display_extension」「text_styling_extension」「right_nav_kai」の<br>
-４つのフォルダが出来るので、４つ全て**SillyTavern/public/scripts/extensions**の中に入れる<br>
-<br>
-![](https://files.catbox.moe/oaolvu.png)
+ZIPを解凍して出来る「chat_window_onoff」「image_display_extension」「text_styling_extension」「right_nav_kai」の４つを、<br>
+全て**SillyTavern/public/scripts/extensions**の中に入れる<br>
+![](https://files.catbox.moe/kx5pck.png)<br>
 <br>
 次に**SillyTavern/public**の中にある**index.html**をテキスト閲覧ソフトで編集する<br>
+![](https://files.catbox.moe/oaolvu.png)<br>
 <br>
-![](https://files.catbox.moe/ksuyjb.png)
+
 ```
 上から４５〜５０行目辺りにある
 <link rel="icon" type="image/x-icon" href="favicon.ico"> の行と
@@ -34,11 +32,12 @@ ZIPを解凍すると「chat_window_onoff」「image_display_extension」「text
 
 ⇧の８行を追記する
 ```
+![](https://files.catbox.moe/ksuyjb.png)
 ![](https://files.catbox.moe/vt3zo4.png)
 <br>
 <br>
 これでインストールは完了です<br>
-chat-window-onoffとtext_styling_extensionはそのまま使えますが<br>
+chat-window-onoffとtext_styling_extensionとright_nav_kaiはそのまま使えますが<br>
 image-displayに関してはキーワードファイルの設定が必要です<br>
 <br>
 # image-display
