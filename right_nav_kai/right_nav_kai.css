@@ -13,20 +13,30 @@ SillyTavern 右ナビゲーションパネルのカスタムUI
     --avatar-base-width: 20vw;
     --avatar-base-border-radius-round: 0%;
 
-    /* パネル自体のスタイル */
+    /*
+     * パネル自体のスタイル
+     * SillyTavern本体の開閉アニメーション(transform, visibility等)を妨げないよう、
+     * 位置やサイズに関するプロパティのみを上書きします。
+     * "inset"は"right"も上書きし、閉じる動作を阻害する可能性があるため使用しません。
+    */
     width: 60vw !important;
-    inset: 34px 0px 1px 85px !important;
+    height: calc(100% - 35px) !important; /* topとbottomの値を元に高さを計算 */
+    top: 34px !important;
+    bottom: 1px !important;
+    left: auto !important;  /* 右寄せを維持 */
+    right: 0 !important;   /* 開いた状態では右端に固定 */
     margin: 2px 2px 2px auto !important;
-    height: auto !important;
 }
 
 /* ---------------------------------- /
 / 2. キャラクターリストのコンテナのスタイル /
 / ---------------------------------- */
-#right-nav-panel #rm_print_characters_block {
+/* パネルが開いている時（.openDrawer）に限定してスタイルを適用することで、より安全にします */
+#right-nav-panel.openDrawer #rm_print_characters_block {
+    display: flex; /* グリッドレイアウトのためにflexを指定 */
     flex-flow: row wrap;
-    align-content: normal;
-    justify-content: normal;
+    align-content: flex-start;
+    justify-content: flex-start;
     align-items: normal;
     overflow-y: auto;
 }
@@ -85,8 +95,6 @@ SillyTavern 右ナビゲーションパネルのカスタムUI
     overflow-wrap: break-word;
     padding-left: 0.5vw;
     line-height: 1.0;
-
-    /* 複数行テキストを2行で省略表示するためのスタイル */
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -94,10 +102,6 @@ SillyTavern 右ナビゲーションパネルのカスタムUI
 }
 
 #right-nav-panel .character_name_block .character_version {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    max-width: 50%;
     display: none;
 }
 
@@ -116,9 +120,9 @@ SillyTavern 右ナビゲーションパネルのカスタムUI
 /* ---------------------------------- /
 / 5. キャラクター作成/編集パネルのスタイル /
 / ---------------------------------- */
-/* ★★★ 更新箇所 ★★★ */
+/* この部分は今回の問題と直接関係ないため変更なし */
 #avatar_load_preview {
     width: 5vw !important;
     height: 5vh !important;
-    object-fit: cover; /* 画像がコンテナに合わせて伸縮するように */
+    object-fit: cover;
 }
