@@ -35,8 +35,11 @@ ZIPを解凍して出来る①「right_nav_kai」②「image_display_extension�
 ![](https://files.catbox.moe/vt3zo4.png)
 <br>
 <br>
-最後にSillyTavern/publicの中に「addchara」という名前の新規フォルダを作成します
+次にSillyTavern/publicの中に「addchara」という名前の新規フォルダを作成します<br>
 ![](https://files.catbox.moe/f3k0r6.png)<br>
+<br>
+最後に「addchara」フォルダの中に貴方の好きな画像を作成しdefault.pngと名付けます<br>
+このdefault.pngは画像表示エリアのデフォルト画像として機能します<br>
 <br>
 これでインストールは完了です<br>
 chat-window-onoffとtext_styling_extensionはそのまま使えますが<br>
