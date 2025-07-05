@@ -330,7 +330,7 @@ JSONが出来たらケース①と同じく画像ファイルをaddchara/キャ�
 新しく追加されたキャラを選択し、適当にテストプレイをしつつ微調整します
 ![](https://files.catbox.moe/ja5h2s.png)<br>
 <br>
-①エクスポートのボタンを押して、②JSON形式を選択すると、自動でJSONファイルがダウンロードされます
+①エクスポートのボタンを押して、②JSON形式を選択すると、キャラクター名.JSONファイルがダウンロードされます
 ![](https://files.catbox.moe/o3qux8.png)<br>
 <br>
 後は①right_nav_kaiと②image_displayと同じ要領でJSONファイルを編集して保存します
