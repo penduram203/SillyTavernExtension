@@ -34,7 +34,7 @@ ZIPを解凍すると「chat_window_onoff」「image_display_extension」「text
 
 ⇧の８行を追記する
 ```
-![](https://files.catbox.moe/cqdh2b.png)
+![](https://files.catbox.moe/vt3zo4.png)
 <br>
 <br>
 これでインストールは完了です<br>
