@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isDragging = false,
         isResizing = false,
         offsetX, offsetY, isCustomWindowOpen = false;
-    const imageMapCache = new Map(); // ★★★ キャラクターごとの画像マップを記憶するキャッシュ
+    const imageMapCache = new Map();
 
     // --- UI要素の作成 ---
     const imageContainer = document.createElement('div');
@@ -371,69 +371,70 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('mousemove', handleResize);
         document.addEventListener('mouseup', stopResize);
     });
-    
-    // --- ★★★ ここからが最後のロジックです ★★★ ---
 
     // 唯一の信頼できるキャラクター名検出器
     function detectCharacterNameFromDOM() {
         const nameHolder = document.querySelector('#character_name_holder');
         if (nameHolder && nameHolder.textContent) return nameHolder.textContent;
-        // フォールバック
         const greetingMessage = document.querySelector('.mes[mesid="0"][is_user="false"]');
         if (greetingMessage && greetingMessage.getAttribute('ch_name')) return greetingMessage.getAttribute('ch_name');
         return null;
     }
     
-    // チャット履歴全体をスキャンして、最後に見つかったキーワードの画像URLを返す
-    function findLastKeywordImageInChat() {
-        const messages = Array.from(document.querySelectorAll('.mes .mes_text'));
-        for (let i = messages.length - 1; i >= 0; i--) {
-            const imageUrl = checkKeywords(messages[i].textContent);
+    // 修正点1: 長いキーワードを優先してマッチング
+    function findMatchingImageUrl(text) {
+        if (!text || !currentImageMap) return null;
+        
+        // キーワードを長さで降順ソート（長いキーワードを優先）
+        const sortedKeywords = Object.keys(currentImageMap)
+            .filter(key => key !== "default")
+            .sort((a, b) => b.length - a.length);
+        
+        // 長いキーワードから順にチェック
+        for (const keyword of sortedKeywords) {
+            if (text.includes(keyword)) {
+                return currentImageMap[keyword];
+            }
+        }
+        return null;
+    }
+
+    // 修正点2: ユーザーメッセージのみを対象にフィルタリング
+    function findLastUserKeywordImage() {
+        // ユーザーメッセージのみを選択 (is_user="true")
+        const userMessages = Array.from(document.querySelectorAll('.mes[is_user="true"] .mes_text'));
+        
+        // 最新のメッセージから古い順にチェック
+        for (let i = userMessages.length - 1; i >= 0; i--) {
+            const text = userMessages[i].textContent;
+            const imageUrl = findMatchingImageUrl(text);
             if (imageUrl) return imageUrl;
         }
         return null;
     }
 
-    // ★★★ 変更点 ★★★: 再帰的に 'image_display_extension' を探すヘルパー関数を追加
-    /**
-     * @summary JSONオブジェクト内を再帰的に探索し、'image_display_extension' キーを持つオブジェクトを返す
-     * @param {any} data - 探索対象のオブジェクトまたは配列
-     * @returns {object|null} - 見つかった画像マップオブジェクト、またはnull
-     */
+    // ★★★ JSON探索ロジック (変更なし) ★★★
     function findImageMapInData(data) {
-        if (data === null || typeof data !== 'object') {
-            return null;
-        }
-
-        // キー 'image_display_extension' が現在の階層に存在するかチェック
+        if (data === null || typeof data !== 'object') return null;
         if (data.hasOwnProperty('image_display_extension')) {
             const potentialMap = data.image_display_extension;
-            // 値がnullでなく、オブジェクト形式であることを確認
             if (typeof potentialMap === 'object' && potentialMap !== null) {
                 console.log("✅ 再帰探索により 'image_display_extension' を発見しました。");
                 return potentialMap;
             }
         }
-
-        // 子要素を再帰的に探索
         for (const key in data) {
             if (data.hasOwnProperty(key)) {
                 const result = findImageMapInData(data[key]);
-                if (result !== null) {
-                    return result; // 最初に見つかったものを返す
-                }
+                if (result !== null) return result;
             }
         }
-
-        return null; // 見つからなかった場合
+        return null;
     }
 
-    // ★★★ 変更点 ★★★: `getCharacterData` 関数を新旧両方のJSON形式に対応させる
-    // `context`とローカルファイルの両方から画像マップを取得する安定版
     async function getCharacterData(characterName) {
-        // SillyTavernの内部データが準備完了するのを待つ
         const context = await new Promise(resolve => {
-            let retries = 2; // 最大1秒待つ
+            let retries = 2;
             const interval = setInterval(() => {
                 const ctx = (window.SillyTavern && typeof window.SillyTavern.getContext === 'function') ? window.SillyTavern.getContext() : null;
                 if ((ctx && ctx.character && ctx.character.name === characterName) || retries <= 0) {
@@ -444,28 +445,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 500);
         });
 
-        // contextからextensionsを取得
         if (context && context.character && context.character.data && context.character.data.extensions && context.character.data.extensions.image_display_extension) {
             console.log(`✅ context APIから拡張データを検出しました: ${characterName}`);
             return context.character.data.extensions.image_display_extension;
         }
 
-        // ローカルファイルを取得
         try {
-            // ★★★ 変更点: JSONファイルのパスを修正 ★★★
             const response = await fetch(`addchara/${characterName}/${characterName}.json`);
             if (response.ok) {
                 const jsonData = await response.json();
-                
-                // まず、ネストされた 'image_display_extension' を探す（新形式対応）
                 const foundMap = findImageMapInData(jsonData);
-                
                 if (foundMap) {
-                    // 新しい形式（キャラクターカードなど）から抽出成功
-                    console.log(`✅ 拡張機能のローカルマッピングを読み込みました (キャラクターカード形式): ${characterName}`);
+                    console.log(`✅ 拡張機能のローカルマッピングを読み込みました: ${characterName}`);
                     return foundMap;
                 } else {
-                    // 'image_display_extension' が見つからなければ、ファイル全体が画像マップだと仮定する（従来形式対応）
                     console.log(`✅ 拡張機能のローカルマッピングを読み込みました (従来形式): ${characterName}`);
                     return jsonData;
                 }
@@ -483,15 +476,12 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`🔍 キャラクター変更を処理中: ${newCharacter || 'デフォルト画面'}`);
         currentCharacter = newCharacter;
 
-        // デフォルト画面に戻る場合は、キャッシュを使わず即座に更新
         if (!newCharacter) {
             currentImageMap = defaultImageMap;
             updateImage();
             return;
         }
 
-        // ★★★ キャッシュロジック ★★★
-        // もし、すでに画像マップを記憶していたら、それを使う
         if (imageMapCache.has(newCharacter)) {
             console.log(`✅ キャッシュから画像マップを読み込みました: ${newCharacter}`);
             currentImageMap = imageMapCache.get(newCharacter);
@@ -499,21 +489,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // キャッシュにない場合のみ、時間のかかるデータ取得を実行
         console.log(`初めてのキャラクターです。データ取得を開始します: ${newCharacter}`);
         const customMap = await getCharacterData(newCharacter);
         currentImageMap = customMap ? { ...defaultImageMap, ...customMap } : defaultImageMap;
         
-        // 取得したデータをキャッシュに保存
         imageMapCache.set(newCharacter, currentImageMap);
-        
-        updateImage(); // 最後に画像を更新
+        updateImage();
     }
     
-    // 現在のチャット内容に基づいて画像を一括更新する関数
+    // 現在のチャット内容に基づいて画像を更新
     function updateImage() {
-        const lastKeywordImage = findLastKeywordImageInChat();
-        const newUrl = lastKeywordImage || currentImageMap.default;
+        // 修正: ユーザーメッセージのみを対象とした画像検索
+        const userKeywordImage = findLastUserKeywordImage();
+        const newUrl = userKeywordImage || currentImageMap.default;
 
         if (imgElement.src !== newUrl) {
             console.log(`🖼️ 画像を更新: ${newUrl}`);
@@ -523,38 +511,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- アプリケーションの起動 ---
-    function checkKeywords(text) {
-        const keywordGroups = Object.entries(currentImageMap).filter(([key]) => key !== "default").map(([keys, url]) => ({
-            keys: keys.split('|'),
-            url
-        }));
-        for (const group of keywordGroups) {
-            for (const keyword of group.keys) {
-                try {
-                    if (new RegExp(keyword).test(text)) return group.url;
-                } catch (e) {
-                    console.error(`無効な正規表現パターン: ${keyword}`);
-                }
-            }
-        }
-        return null;
-    }
-
-    // 1. チャット欄のキーワード監視（メッセージの追加・削除に反応）
+    // 1. チャット欄のキーワード監視（ユーザーメッセージのみ対象）
     const chatContainer = document.getElementById('chat');
     if (chatContainer) {
         new MutationObserver(() => updateImage()).observe(chatContainer, {
-            childList: true
+            childList: true,
+            subtree: true // サブツリーの変更も監視
         });
-        console.log("✅ チャット欄(キーワード)の監視を開始しました。");
+        console.log("✅ チャット欄(ユーザーメッセージ)の監視を開始しました。");
     }
 
-    // 2. キャラクター変更の監視（定期チェック方式）
+    // 2. キャラクター変更の監視
     setInterval(() => {
         const detectedName = detectCharacterNameFromDOM();
         if (detectedName !== currentCharacter) {
             handleCharacterChange(detectedName);
         }
-    }, 250); // 0.25秒ごとにキャラクターの変更をチェック（高速な反応のため）
+    }, 250);
     console.log("🚀 メインループを開始しました。0.25秒ごとにキャラクターを監視します。");
 });
