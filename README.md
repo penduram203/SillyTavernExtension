@@ -40,6 +40,7 @@ ZIPを解凍して出来る①「right_nav_kai」②「image_display_extension�
 <br>
 最後に「addchara」フォルダの中に貴方の好きな画像を作成しdefault.pngと名付けます<br>
 このdefault.pngは画像表示エリアのデフォルト画像として機能します<br>
+**default.pngが無いとSillyTavernが起動しませんので注意して下さい**<br>
 <br>
 これでインストールは完了です<br>
 chat-window-onoffとtext_styling_extensionはそのまま使えますが<br>
