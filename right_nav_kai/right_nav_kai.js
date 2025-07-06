@@ -2,13 +2,46 @@
     'use strict';
 
     let debounceTimer;
-    let characterImageCache = {};
+    const characterImageCache = new Map(); // Mapオブジェクトでキャッシュ管理
+    const CACHE_EXPIRY_DAYS = 7; // キャッシュ有効期限（日）
     const DEBUG = true; // デバッグモード
 
     // デバッグログ出力関数
     function debugLog(...args) {
         if (DEBUG) {
             console.log('[RightNavKai DEBUG]', ...args);
+        }
+    }
+
+    // ローカルストレージからキャッシュを読み込み
+    function loadCacheFromStorage() {
+        try {
+            const cacheData = localStorage.getItem('rightNavKaiCache');
+            if (cacheData) {
+                const parsedCache = JSON.parse(cacheData);
+                const currentTime = Date.now();
+                
+                for (const [name, entry] of Object.entries(parsedCache)) {
+                    // 有効期限内のキャッシュのみ読み込み
+                    if (currentTime - entry.timestamp < CACHE_EXPIRY_DAYS * 86400000) {
+                        characterImageCache.set(name, entry);
+                    }
+                }
+                debugLog('Cache loaded from localStorage', characterImageCache);
+            }
+        } catch (error) {
+            console.error('Right Nav Kai: Cache load error', error);
+        }
+    }
+
+    // キャッシュをローカルストレージに保存
+    function saveCacheToStorage() {
+        try {
+            const cacheObj = Object.fromEntries(characterImageCache);
+            localStorage.setItem('rightNavKaiCache', JSON.stringify(cacheObj));
+            debugLog('Cache saved to localStorage');
+        } catch (error) {
+            console.error('Right Nav Kai: Cache save error', error);
         }
     }
 
@@ -21,16 +54,18 @@
         return name;
     }
 
-    // JSON取得関数（エラーハンドリング強化 & 構造非依存化）
+    // JSON取得関数（キャッシュ機能強化版）
     async function fetchCharacterImage(characterName, imgElement) {
         if (!characterName) {
             debugLog('Character name is missing');
             return;
         }
 
-        if (characterImageCache[characterName]) {
-            debugLog(`Using cached image for ${characterName}`, characterImageCache[characterName]);
-            imgElement.src = characterImageCache[characterName];
+        // キャッシュチェック
+        const cacheEntry = characterImageCache.get(characterName);
+        if (cacheEntry) {
+            debugLog(`Using cached image for ${characterName}`);
+            imgElement.src = cacheEntry.url;
             return;
         }
 
@@ -48,24 +83,16 @@
             debugLog(`JSON response for ${characterName}:`, jsonData);
 
             function findThumbnailUrl(obj) {
-                if (typeof obj !== 'object' || obj === null) {
-                    return null;
+                if (typeof obj !== 'object' || obj === null) return null;
+                
+                if (obj.image_display_extension?.thumbnail) {
+                    return obj.image_display_extension.thumbnail;
                 }
-                if (Object.prototype.hasOwnProperty.call(obj, 'image_display_extension')) {
-                    const extensionData = obj.image_display_extension;
-                    if (typeof extensionData === 'object' && extensionData !== null && Object.prototype.hasOwnProperty.call(extensionData, 'thumbnail')) {
-                        return extensionData.thumbnail;
-                    }
-                }
+                
                 for (const key in obj) {
-                    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                        const value = obj[key];
-                        if (typeof value === 'object' && value !== null) {
-                            const result = findThumbnailUrl(value);
-                            if (result) {
-                                return result;
-                            }
-                        }
+                    if (typeof obj[key] === 'object') {
+                        const result = findThumbnailUrl(obj[key]);
+                        if (result) return result;
                     }
                 }
                 return null;
@@ -78,10 +105,16 @@
                 return;
             }
 
+            // キャッシュに保存
+            const cacheData = {
+                url: imageUrl,
+                timestamp: Date.now()
+            };
+            characterImageCache.set(characterName, cacheData);
+            saveCacheToStorage();
+
             debugLog(`Found image URL for ${characterName}:`, imageUrl);
-            characterImageCache[characterName] = imageUrl;
             imgElement.src = imageUrl;
-            debugLog(`Image src updated to: ${imageUrl}`);
         } catch (error) {
             console.error(`Right Nav Kai: Failed to load image for ${characterName}`, error);
             debugLog(`Error details: ${error.message}`);
@@ -112,23 +145,20 @@
         });
     }
 
-    // Observer設定関数（スタイル操作を削除し、画像更新のトリガーに特化）
+    // Observer設定関数
     function setupObserverForNavPanel(panel) {
         debugLog('Setting up observer for nav panel');
 
         const observer = new MutationObserver((mutations) => {
-            // 複数の変更をまとめて処理するためのデバウンス
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
-                // パネルが開いている（'openDrawer'クラスを持つ）場合のみ画像更新を実行
                 if (panel.classList.contains('openDrawer')) {
                     debugLog('Panel is open, triggering image update.');
                     updateCharacterImages();
                 }
-            }, 100); // 連続的な変更に対応するため少し待つ
+            }, 100);
         });
 
-        // 監視対象は元のままで、SillyTavernの様々な変更に対応できるようにする
         observer.observe(panel, {
             attributes: true,
             attributeFilter: ['style', 'class'],
@@ -136,12 +166,10 @@
             subtree: true
         });
 
-        // キャラクターリスト自体の変更（ソートなど）も監視する
         const charList = document.getElementById('rm_print_characters_block');
         if (charList) {
             debugLog('Setting up observer for character list');
             const listObserver = new MutationObserver(() => {
-                // ここでもデバウンスをかけるとより安定する
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
                     if (panel.classList.contains('openDrawer')) {
@@ -156,30 +184,26 @@
             });
         }
 
-        // 初期表示時にパネルが既に開いている場合に対応
         if (panel.classList.contains('openDrawer')) {
-            debugLog('Panel already open on initialization, updating images.');
-            // 少し遅延させてから実行し、初期描画を確実にする
             setTimeout(updateCharacterImages, 200);
         }
     }
 
-
-
     // 初期化関数
     function initialize() {
         debugLog('Initializing Right Nav Kai extension');
+        loadCacheFromStorage(); // 起動時にキャッシュを読み込み
+        
         const navPanel = document.getElementById('right-nav-panel');
         if (navPanel) {
             setupObserverForNavPanel(navPanel);
         } else {
-            // navPanelがまだDOMにない場合、DOM全体を監視して出現を待つ
             const bodyObserver = new MutationObserver((mutations, observer) => {
                 const foundPanel = document.getElementById('right-nav-panel');
                 if (foundPanel) {
                     debugLog('Nav panel found via observer');
                     setupObserverForNavPanel(foundPanel);
-                    observer.disconnect(); // パネルが見つかったら監視を停止
+                    observer.disconnect();
                 }
             });
             bodyObserver.observe(document.body, {
