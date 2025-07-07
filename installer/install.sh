@@ -27,8 +27,16 @@ cp -rf "$INSTALLER_DIR/extensions/image_display_extension" "$ROOT_DIR/public/scr
 cp -rf "$INSTALLER_DIR/extensions/right_nav_kai" "$ROOT_DIR/public/scripts/extensions/"
 cp -rf "$INSTALLER_DIR/extensions/text_styling_extension" "$ROOT_DIR/public/scripts/extensions/"
 
-# default.pngのコピー（上書きしない）
+# default.pngのコピー処理（修正部分）
+# ① addcharaディレクトリの存在確認
+if [ ! -d "$ROOT_DIR/public/addchara" ]; then
+  # ② 存在しない場合は作成
+  mkdir -p "$ROOT_DIR/public/addchara"
+fi
+
+# ④ addchara内にdefault.pngが存在するか確認
 if [ ! -f "$ROOT_DIR/public/addchara/default.png" ]; then
+  # ⑤ 存在しない場合のみコピー
   cp "$INSTALLER_DIR/default.png" "$ROOT_DIR/public/addchara/"
 fi
 
@@ -90,3 +98,4 @@ echo "index.htmlのバックアップ: ${index_file}.bak"
 
 chmod -R 777 $ROOT_DIR/public/scripts/extensions/
 chmod -R 777 $ROOT_DIR/public/index.html
+chmod -R 777 $ROOT_DIR/public/addchara
