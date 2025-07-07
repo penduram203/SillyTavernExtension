@@ -30,9 +30,15 @@ robocopy "%INSTALLER_DIR%extensions\image_display_extension" "%ROOT_DIR%public\s
 robocopy "%INSTALLER_DIR%extensions\right_nav_kai" "%ROOT_DIR%public\scripts\extensions\right_nav_kai" /E /IS /IT >nul
 robocopy "%INSTALLER_DIR%extensions\text_styling_extension" "%ROOT_DIR%public\scripts\extensions\text_styling_extension" /E /IS /IT >nul
 
-:: default.pngのコピー（上書きしない）
+:: default.pngのコピー処理（修正版）
+if not exist "%ROOT_DIR%public\addchara\" (
+   mkdir "%ROOT_DIR%public\addchara\"
+   echo addcharaディレクトリを作成しました
+)
+
 if not exist "%ROOT_DIR%public\addchara\default.png" (
    copy "%INSTALLER_DIR%default.png" "%ROOT_DIR%public\addchara\" >nul
+   echo default.pngをコピーしました
 )
 
 :: index.htmlの編集
