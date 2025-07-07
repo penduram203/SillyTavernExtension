@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isResizing = false,
         offsetX, offsetY, isCustomWindowOpen = false;
     const imageMapCache = new Map();
+    let isDefaultImageFailed = false; // デフォルト画像エラーフラグ追加
 
     // --- UI要素の作成 ---
     const imageContainer = document.createElement('div');
@@ -111,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     heightInput.id = 'custom-height';
     customWindow.appendChild(heightInput);
 
-    // --- UI操作のための関数群（変更なし） ---
+    // --- UI操作のための関数群 ---
     function updateCustomWindow() {
         xInput.value = parseInt(imageContainer.style.left) || DEFAULT_LEFT;
         yInput.value = parseInt(imageContainer.style.top) || DEFAULT_TOP;
@@ -315,10 +316,25 @@ document.addEventListener('DOMContentLoaded', () => {
             imageContainer.style.height = '100vh';
         }
     });
+    
+    // 画像エラーハンドラの改善: デフォルト画像失敗時に空のデータURLを設定
     imgElement.onerror = function() {
         console.error("画像の読み込みに失敗しました:", this.src);
-        this.src = defaultImageMap.default;
+        
+        // デフォルト画像の読み込みに失敗した場合
+        if (this.src.endsWith("addchara/default.png")) {
+            isDefaultImageFailed = true;
+            console.warn("⚠️ デフォルト画像が見つかりません。画像表示を無効化します");
+            
+            // 空のデータURLを設定してエラー連鎖を防止
+            this.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+            this.style.display = 'none'; // 画像要素を非表示
+        } else {
+            // その他の画像エラーの場合はデフォルト画像を試みる
+            this.src = currentImageMap.default;
+        }
     };
+    
     header.addEventListener('mousedown', (e) => {
         if (e.target === colorPicker || currentMode !== 'normal') return;
         isDragging = true;
@@ -413,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    // ★★★ JSON探索ロジック (変更なし) ★★★
+    // ★★★ JSON探索ロジック ★★★
     function findImageMapInData(data) {
         if (data === null || typeof data !== 'object') return null;
         if (data.hasOwnProperty('image_display_extension')) {
@@ -499,6 +515,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 現在のチャット内容に基づいて画像を更新
     function updateImage() {
+        // デフォルト画像エラー状態をリセット
+        if (isDefaultImageFailed) {
+            imgElement.style.display = ''; // 表示状態に戻す
+            isDefaultImageFailed = false;
+        }
+        
         // 修正: ユーザーメッセージのみを対象とした画像検索
         const userKeywordImage = findLastUserKeywordImage();
         const newUrl = userKeywordImage || currentImageMap.default;
@@ -507,6 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`🖼️ 画像を更新: ${newUrl}`);
             imgElement.src = newUrl;
             currentImageUrl = newUrl;
+            imgElement.style.display = ''; // 常に表示状態にする
         }
     }
 
