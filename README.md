@@ -4,48 +4,25 @@ SillyTavernの拡張機能です<br>
 まず　https://github.com/penduram203/SillyTavernExtension/tree/main
 にアクセスし、<br>
 「<> code」をクリックしてから「Download ZIP」をクリックしてファイルをダウンロード<br>
-![](https://files.catbox.moe/0uhqi3.png)<br>
+![](https://files.catbox.moe/pn6hwh.png)<br>
 <br>
-ZIPを解凍して出来る①「right_nav_kai」②「image_display_extension」③「chat_window_onoff」④「text_styling_extension」の４つを、全て**SillyTavern/public/scripts/extensions**の中に入れる<br>
-![](https://files.catbox.moe/kx5pck.png)<br>
+ZIPファイルを解凍して、中にあるinstallerフォルダをSillyTavernフォルダに移動させる<br>
+![](https://files.catbox.moe/4vw5nv.png)<br>
 <br>
-次に**SillyTavern/public**の中にある**index.html**をテキスト閲覧ソフトで編集する<br>
-![](https://files.catbox.moe/oaolvu.png)<br>
+installerフォルダを開いてinstall.batをクリックして自動インストール開始<br>
+linuxならinstall.shをインストール方法.txtに書いてある手順でインストール<br>
+![](https://files.catbox.moe/zlgche.png)<br>
 <br>
-
-```
-上から４５〜５０行目辺りにある
-<link rel="icon" type="image/x-icon" href="favicon.ico"> の行と
-"<!-- Scripts are loaded at the end of the body to improve page load speed --> の行の間に
-
-
-
-<link rel="stylesheet" href="scripts/extensions/image_display_extension/image-display.css">
-<script src="scripts/extensions/image_display_extension/image-display.js"></script>
-<link rel="stylesheet" href="scripts/extensions/text_styling_extension/text-styling.css">
-<script src="scripts/extensions/text_styling_extension/text-styling.js" defer></script>
-<link rel="stylesheet" href="scripts/extensions/chat_window_onoff/chat_window_onoff.css">
-<script src="scripts/extensions/chat_window_onoff/chat_window_onoff.js"></script>
-<link rel="stylesheet" href="scripts/extensions/right_nav_kai/right_nav_kai.css">
-<script src="scripts/extensions/right_nav_kai/right_nav_kai.js"></script>
-
-⇧の８行を追記して保存
-```
-![](https://files.catbox.moe/ksuyjb.png)
-![](https://files.catbox.moe/vt3zo4.png)
-<br>
-<br>
-次にSillyTavern/publicの中に「addchara」という名前の新規フォルダを作成します<br>
-![](https://files.catbox.moe/f3k0r6.png)<br>
-<br>
-最後に「addchara」フォルダの中に貴方の好きな画像を作成しdefault.pngと名付けます<br>
+SillyTavern/public/addcharaというフォルダが自動作成されています<br>
+addcharaフォルダの中にあるdefault.pngは自由に好きな画像に差し替えられます<br>
 このdefault.pngは画像表示エリアのデフォルト画像として機能します<br>
-**default.pngが無いとSillyTavernが起動しませんので注意して下さい**<br>
+![](https://files.catbox.moe/6h3mnp.png)<br>
 <br>
 これでインストールは完了です<br>
 chat-window-onoffとtext_styling_extensionはそのまま使えますが<br>
 right_nav_kaiとimage-displayに関しては追加設定が必要です<br>
 <br>
+
 # ①right_nav_kai
 画面右上のキャラクター管理パネルのUIを変更します<br>
 単にキャラ画像を大きく表示するだけの拡張機能ですが画像を変更するには設定が必要です<br>
