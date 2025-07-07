@@ -1,0 +1,10 @@
+{
+    "name": "Image Display Extension",
+    "version": "1.0.0",
+    "description": "Displays context-aware images with draggable/resizable window",
+    "author": "Your Name",
+    "license": "MIT",
+    "homepage": "https://your-domain.com",
+    "entrypoint": "image-display.js",
+    "stylesheet": "image-display.css"
+}
