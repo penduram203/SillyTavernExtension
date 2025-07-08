@@ -14,12 +14,14 @@ try {
     }
 
     # 各種文字列の定義
-    $startStr = '<link rel="icon" type="image/x-icon" href="favicon.ico">'
-    $endStr = '<!-- Scripts are loaded at the end of the body to improve page load speed -->'
+    $startTag = '<link rel="icon" type="image/x-icon" href="favicon.ico">'
+    $endTag = '<!-- Scripts are loaded at the end of the body to improve page load speed -->'
     $newLine = [System.Environment]::NewLine
     
-    # 挿入するHTMLブロックをヒアドキュメントで定義
-    $insertBlock = @"
+    # 挿入するHTMLブロックを定義
+    # 前後に改行を1つずつ含めることで、タグとの間に適切なスペースを確保する
+    $replacementBlock = @"
+
     <link rel="stylesheet" href="scripts/extensions/image_display_extension/image-display.css">
     <script src="scripts/extensions/image_display_extension/image-display.js"></script>
     <link rel="stylesheet" href="scripts/extensions/text_styling_extension/text-styling.css">
@@ -28,33 +30,27 @@ try {
     <script src="scripts/extensions/chat_window_onoff/chat_window_onoff.js"></script>
     <link rel="stylesheet" href="scripts/extensions/right_nav_kai/right_nav_kai.css">
     <script src="scripts/extensions/right_nav_kai/right_nav_kai.js"></script>
+
 "@
 
-    # ==================== ここが最重要修正点 ====================
     # ファイルをUTF-8として正しく読み込む
     $content = Get-Content -Path $filePath -Raw -Encoding UTF8
-    # ==========================================================
 
-    # 既にスクリプトが挿入済みかチェック
-    if ($content.Contains('image-display.js')) {
-        Write-Host "Scripts seem to be already installed. Skipping process." -ForegroundColor Yellow
-        $exitCode = 0 # 成功として終了
-        exit $exitCode
-    }
+    # ==================== ここからが新しいロジック ====================
 
     # 開始タグと終了タグの位置を検索
-    $startIndex = $content.IndexOf($startStr)
-    $endIndex = $content.IndexOf($endStr)
+    $startIndex = $content.IndexOf($startTag)
+    $endIndex = $content.IndexOf($endTag)
 
-    # エラーチェック（英語メッセージに変更）
+    # エラーチェック
     if ($startIndex -eq -1) {
-        Write-Host "Error: Start tag not found. The version of SillyTavern might be incompatible or the file has been modified." -ForegroundColor Red
-        Write-Host "Expected start tag: $startStr"
+        Write-Host "Error: Start tag not found. The version of SillyTavern might be incompatible." -ForegroundColor Red
+        Write-Host "Expected start tag: $startTag"
         exit $exitCode
     }
     if ($endIndex -eq -1) {
-        Write-Host "Error: End tag not found. The version of SillyTavern might be incompatible or the file has been modified." -ForegroundColor Red
-        Write-Host "Expected end tag: $endStr"
+        Write-Host "Error: End tag not found. The version of SillyTavern might be incompatible." -ForegroundColor Red
+        Write-Host "Expected end tag: $endTag"
         exit $exitCode
     }
     if ($startIndex -ge $endIndex) {
@@ -62,13 +58,18 @@ try {
         exit $exitCode
     }
 
-    # 新しいコンテンツを構築
-    $firstPartEnd = $startIndex + $startStr.Length
-    $firstPart = $content.Substring(0, $firstPartEnd)
+    # 新しいコンテンツを構築する
+    # 1. 開始タグの直後までの部分を取得
+    $firstPart = $content.Substring(0, $startIndex + $startTag.Length)
+    
+    # 2. 終了タグ以降の部分を取得
     $secondPart = $content.Substring($endIndex)
     
-    # 全てを結合
-    $newContent = "$firstPart$newLine$insertBlock$newLine$secondPart"
+    # 3. 「開始タグまでの部分」 + 「新しいブロック」 + 「終了タグ以降の部分」 を結合
+    #    これにより、間の部分は完全に破棄・置換される
+    $newContent = $firstPart + $replacementBlock + $secondPart
+
+    # ==================== 新しいロジックここまで ====================
 
     # ファイルに書き込む (UTF-8, BOMなし)
     [System.IO.File]::WriteAllText($filePath, $newContent, [System.Text.UTF8Encoding]::new($false))
