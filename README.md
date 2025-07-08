@@ -10,8 +10,9 @@ ZIPファイルを解凍して、中にあるinstallerフォルダをSillyTavern
 ![](https://files.catbox.moe/4vw5nv.png)<br>
 <br>
 installerフォルダを開いてinstall.batをクリックして自動インストール開始<br>
-linuxならinstall.shをインストール方法.txtに書いてある手順でインストール<br>
-![](https://files.catbox.moe/54zxge.png)<br>
+linuxならinstall.shを自動インストール方法.txtに書いてある手順でインストール<br>
+失敗する場合は「手動インストール.txt」を見て下さい<br>
+![](https://files.catbox.moe/ddladq.png)<br>
 <br>
 これでインストール完了です<br>
 right_nav_kaiとimage-displayに関しては追加設定が必要です<br>
