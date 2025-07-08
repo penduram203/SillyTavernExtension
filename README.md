@@ -11,15 +11,9 @@ ZIPファイルを解凍して、中にあるinstallerフォルダをSillyTavern
 <br>
 installerフォルダを開いてinstall.batをクリックして自動インストール開始<br>
 linuxならinstall.shをインストール方法.txtに書いてある手順でインストール<br>
-![](https://files.catbox.moe/zlgche.png)<br>
+![](https://files.catbox.moe/54zxge.png)<br>
 <br>
-SillyTavern/public/addcharaというフォルダが自動作成されています<br>
-addcharaフォルダの中にあるdefault.pngは自由に好きな画像に差し替えられます<br>
-このdefault.pngは画像表示エリアのデフォルト画像として機能します<br>
-![](https://files.catbox.moe/6h3mnp.png)<br>
-<br>
-これでインストールは完了です<br>
-chat-window-onoffとtext_styling_extensionはそのまま使えますが<br>
+これでインストール完了です<br>
 right_nav_kaiとimage-displayに関しては追加設定が必要です<br>
 <br>
 
