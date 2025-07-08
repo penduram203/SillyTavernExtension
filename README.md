@@ -7,12 +7,12 @@ SillyTavernの拡張機能です<br>
 ![](https://files.catbox.moe/pn6hwh.png)<br>
 <br>
 ZIPファイルを解凍して、中にあるinstallerフォルダをSillyTavernフォルダに移動させる<br>
-![](https://files.catbox.moe/4vw5nv.png)<br>
+![](https://files.catbox.moe/lzsx5l.png)<br>
 <br>
 installerフォルダを開いてinstall.batをクリックして自動インストール開始<br>
 linuxならinstall.shを自動インストール方法.txtに書いてある手順でインストール<br>
 失敗する場合は手動インストール.txtを見て下さい<br>
-![](https://files.catbox.moe/ddladq.png)<br>
+![](https://files.catbox.moe/7humtn.png)<br>
 <br>
 これでインストール完了です<br>
 right_nav_kaiとimage-displayに関しては追加設定が必要です<br>
