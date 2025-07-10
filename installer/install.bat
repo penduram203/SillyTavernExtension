@@ -1,79 +1,79 @@
 @echo off
 setlocal
 
-:: ƒCƒ“ƒXƒg[ƒ‰[‚ÌƒfƒBƒŒƒNƒgƒŠƒpƒX‚ðŽæ“¾
+:: ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãƒ‘ã‚¹ã‚’å–å¾—
 set "INSTALLER_DIR=%~dp0"
 
-:: ƒ‹[ƒgƒfƒBƒŒƒNƒgƒŠ‚ðÝ’è (SillyTavern‚Ìƒ‹[ƒg)
+:: ãƒ«ãƒ¼ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’è¨­å®š (SillyTavernã®ãƒ«ãƒ¼ãƒˆ)
 set "ROOT_DIR=%INSTALLER_DIR%..\"
 
-:: ŠÇ—ŽÒŒ ŒÀƒ`ƒFƒbƒN
+:: ç®¡ç†è€…æ¨©é™ãƒã‚§ãƒƒã‚¯
 net session >nul 2>&1
 if %errorlevel% neq 0 (
-   echo ŠÇ—ŽÒŒ ŒÀ‚ª•K—v‚Å‚·B‰EƒNƒŠƒbƒN¨uŠÇ—ŽÒ‚Æ‚µ‚ÄŽÀsv‚µ‚Ä‚­‚¾‚³‚¢B
+   echo ç®¡ç†è€…æ¨©é™ãŒå¿…è¦ã§ã™ã€‚å³ã‚¯ãƒªãƒƒã‚¯â†’ã€Œç®¡ç†è€…ã¨ã—ã¦å®Ÿè¡Œã€ã—ã¦ãã ã•ã„ã€‚
    pause
    exit /b 1
 )
 
-:: •K—v‚ÈƒfƒBƒŒƒNƒgƒŠ‚Æƒtƒ@ƒCƒ‹‚Ì‘¶ÝŠm”F
+:: å¿…è¦ãªãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã¨ãƒ•ã‚¡ã‚¤ãƒ«ã®å­˜åœ¨ç¢ºèª
 if not exist "%ROOT_DIR%public\scripts\extensions" (
-   echo public/scripts/extensions ƒfƒBƒŒƒNƒgƒŠ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ
-   echo ƒCƒ“ƒXƒg[ƒ‰[‚Í SillyTavern/installer/ ‚É”z’u‚µ‚Ä‚­‚¾‚³‚¢B
+   echo public/scripts/extensions ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“
+   echo ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã¯ SillyTavern/installer/ ã«é…ç½®ã—ã¦ãã ã•ã„ã€‚
    pause
    exit /b 1
 )
 if not exist "%INSTALLER_DIR%install_core.ps1" (
-   echo •K—v‚Èƒtƒ@ƒCƒ‹ install_core.ps1 ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñB
-   echo ƒoƒbƒ`ƒtƒ@ƒCƒ‹‚Æ“¯‚¶êŠ‚É”z’u‚µ‚Ä‚­‚¾‚³‚¢B
+   echo å¿…è¦ãªãƒ•ã‚¡ã‚¤ãƒ« install_core.ps1 ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã€‚
+   echo ãƒãƒƒãƒãƒ•ã‚¡ã‚¤ãƒ«ã¨åŒã˜å ´æ‰€ã«é…ç½®ã—ã¦ãã ã•ã„ã€‚
    pause
    exit /b 1
 )
 
-:: Šg’£‹@”\‚ÌƒRƒs[i‹­§ã‘‚«j
-echo Šg’£‹@”\‚ðƒRƒs[‚µ‚Ä‚¢‚Ü‚·...
+:: æ‹¡å¼µæ©Ÿèƒ½ã®ã‚³ãƒ”ãƒ¼ï¼ˆå¼·åˆ¶ä¸Šæ›¸ãï¼‰
+echo æ‹¡å¼µæ©Ÿèƒ½ã‚’ã‚³ãƒ”ãƒ¼ã—ã¦ã„ã¾ã™...
 robocopy "%INSTALLER_DIR%extensions" "%ROOT_DIR%public\scripts\extensions" /E /IS /IT /NFL /NDL /NJH /NJS /nc /ns /np >nul
 
-:: default.png‚ÌƒRƒs[ˆ—
+:: default.pngã®ã‚³ãƒ”ãƒ¼å‡¦ç†
 if not exist "%ROOT_DIR%public\addchara\" (
    mkdir "%ROOT_DIR%public\addchara\"
-   echo addcharaƒfƒBƒŒƒNƒgƒŠ‚ðì¬‚µ‚Ü‚µ‚½
+   echo addcharaãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆã—ã¾ã—ãŸ
 )
 if not exist "%ROOT_DIR%public\addchara\default.png" (
    copy "%INSTALLER_DIR%default.png" "%ROOT_DIR%public\addchara\" >nul
-   echo default.png‚ðƒRƒs[‚µ‚Ü‚µ‚½
+   echo default.pngã‚’ã‚³ãƒ”ãƒ¼ã—ã¾ã—ãŸ
 )
 
-:: index.html‚Ì•ÒW
-echo index.html‚ð•ÒW‚µ‚Ä‚¢‚Ü‚·...
+:: index.htmlã®ç·¨é›†
+echo index.htmlã‚’ç·¨é›†ã—ã¦ã„ã¾ã™...
 set "index_file=%ROOT_DIR%public\index.html"
 
 if not exist "%index_file%" (
-   echo index.html‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ: %index_file%
+   echo index.htmlãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“: %index_file%
    pause
    exit /b 1
 )
 
-:: ƒoƒbƒNƒAƒbƒv‚ðì¬
+:: ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—ã‚’ä½œæˆ
 copy /y "%index_file%" "%index_file%.bak" >nul
-echo index.html‚ÌƒoƒbƒNƒAƒbƒv‚ðì¬‚µ‚Ü‚µ‚½: %index_file%.bak
+echo index.htmlã®ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—ã‚’ä½œæˆã—ã¾ã—ãŸ: %index_file%.bak
 
 :: ================================================================
-:: PowerShellƒXƒNƒŠƒvƒg‚ðŒÄ‚Ño‚µ‚ÄAˆÀ‘S‚Éƒtƒ@ƒCƒ‹•ÒW‚ðs‚¤
+:: PowerShellã‚¹ã‚¯ãƒªãƒ—ãƒˆã‚’å‘¼ã³å‡ºã—ã¦ã€å®‰å…¨ã«ãƒ•ã‚¡ã‚¤ãƒ«ç·¨é›†ã‚’è¡Œã†
 :: ================================================================
 powershell -NoProfile -ExecutionPolicy Bypass -File "%INSTALLER_DIR%install_core.ps1" -filePath "%index_file%"
 
 if %errorlevel% neq 0 (
     echo.
     echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    echo !!  index.html ‚Ì•ÒW‚ÉŽ¸”s‚µ‚Ü‚µ‚½B            !!
-    echo !!  SillyTavern‚Ìƒo[ƒWƒ‡ƒ“‚ª‘Î‰ž‚µ‚Ä‚¢‚È‚¢‚©A   !!
-    echo !!  ƒtƒ@ƒCƒ‹‚ª•ÏX‚³‚ê‚Ä‚¢‚é‰Â”\«‚ª‚ ‚è‚Ü‚·B     !!
-    echo !!  ƒoƒbƒNƒAƒbƒv‚©‚çƒtƒ@ƒCƒ‹‚ð•œŒ³‚µ‚Ä‚­‚¾‚³‚¢B     !!
+    echo !!  index.html ã®ç·¨é›†ã«å¤±æ•—ã—ã¾ã—ãŸã€‚            !!
+    echo !!  SillyTavernã®ãƒãƒ¼ã‚¸ãƒ§ãƒ³ãŒå¯¾å¿œã—ã¦ã„ãªã„ã‹ã€   !!
+    echo !!  ãƒ•ã‚¡ã‚¤ãƒ«ãŒå¤‰æ›´ã•ã‚Œã¦ã„ã‚‹å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ã€‚     !!
+    echo !!  ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—ã‹ã‚‰ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å¾©å…ƒã—ã¦ãã ã•ã„ã€‚     !!
     echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    echo ƒoƒbƒNƒAƒbƒvƒtƒ@ƒCƒ‹: %index_file%.bak
+    echo ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—ãƒ•ã‚¡ã‚¤ãƒ«: %index_file%.bak
 ) else (
     echo.
-    echo ƒCƒ“ƒXƒg[ƒ‹‚ª³í‚ÉŠ®—¹‚µ‚Ü‚µ‚½B
+    echo ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ãŒæ­£å¸¸ã«å®Œäº†ã—ã¾ã—ãŸã€‚
 )
 
 echo.
