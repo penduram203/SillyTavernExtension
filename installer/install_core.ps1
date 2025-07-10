@@ -32,17 +32,8 @@ try {
     <script src="scripts/extensions/stj_editor/stj_editor.js"></script>
 "@
 
-    # ==================== ここが最重要修正点 ====================
     # ファイルをUTF-8として正しく読み込む
     $content = Get-Content -Path $filePath -Raw -Encoding UTF8
-    # ==========================================================
-
-    # 既にスクリプトが挿入済みかチェック
-    if ($content.Contains('image-display.js')) {
-        Write-Host "Scripts seem to be already installed. Skipping process." -ForegroundColor Yellow
-        $exitCode = 0 # 成功として終了
-        exit $exitCode
-    }
 
     # 開始タグと終了タグの位置を検索
     $startIndex = $content.IndexOf($startStr)
