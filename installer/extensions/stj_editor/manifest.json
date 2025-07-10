@@ -1,0 +1,18 @@
+{
+    "name": "STJ Character Exporter",
+    "version": "1.0.0",
+    "description": "キャラクター情報をJSON形式でエクスポートする拡張機能",
+    "author": "Your Name",
+    "license": "MIT",
+    "homepage": "https://example.com",
+    "funding": "https://example.com/donate",
+    "main": "stj_editor.js",
+    "scripts": {
+        "build": "echo 'No build required'"
+    },
+    "dependencies": {},
+    "repository": {
+        "type": "git",
+        "url": "https://example.com/repo.git"
+    }
+}
