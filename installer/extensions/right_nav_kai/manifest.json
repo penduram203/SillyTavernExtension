@@ -1,9 +1,0 @@
-{
-  "name": "right_nav_kai",
-  "display_name": "Right Nav Panel Customizer (右ナビパネル改変)",
-  "version": "1.0.0",
-  "author": "AI Assistant",
-  "description": "キャラクター選択パネルのUIを指定されたスタイルにカスタムします。",
-  "script": "right_nav_kai.js",
-  "style": "right_nav_kai.css"
-}
