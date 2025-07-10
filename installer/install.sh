@@ -26,6 +26,7 @@ cp -rf "$INSTALLER_DIR/extensions/chat_window_onoff" "$ROOT_DIR/public/scripts/e
 cp -rf "$INSTALLER_DIR/extensions/image_display_extension" "$ROOT_DIR/public/scripts/extensions/"
 cp -rf "$INSTALLER_DIR/extensions/right_nav_kai" "$ROOT_DIR/public/scripts/extensions/"
 cp -rf "$INSTALLER_DIR/extensions/text_styling_extension" "$ROOT_DIR/public/scripts/extensions/"
+cp -rf "$INSTALLER_DIR/extensions/stj_editor" "$ROOT_DIR/public/scripts/extensions/"
 
 # default.pngのコピー処理（修正部分）
 # ① addcharaディレクトリの存在確認
@@ -53,7 +54,9 @@ insert_lines='
     <link rel="stylesheet" href="scripts/extensions/chat_window_onoff/chat_window_onoff.css">
     <script src="scripts/extensions/chat_window_onoff/chat_window_onoff.js"></script>
     <link rel="stylesheet" href="scripts/extensions/right_nav_kai/right_nav_kai.css">
-    <script src="scripts/extensions/right_nav_kai/right_nav_kai.js"></script>'
+    <script src="scripts/extensions/right_nav_kai/right_nav_kai.js"></script>
+    <link rel="stylesheet" href="scripts/extensions/stj_editor/stj_editor.css">
+    <script src="scripts/extensions/stj_editor/stj_editor.js"></script>'
 
 if [ ! -f "$index_file" ]; then
   echo "index.htmlが見つかりません: $index_file"
