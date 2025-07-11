@@ -466,37 +466,38 @@
             alert('キャラクター名が設定されていません');
             return;
         }
-        
+    
         // デフォルト画像設定
         const defaultImage = document.getElementById('stj_default_image').value;
         const defaultExtension = document.getElementById('stj_default_extension').value;
-        
+    
         // サムネイル画像設定
         const thumbnailImage = document.getElementById('stj_thumbnail_image').value;
         const thumbnailExtension = document.getElementById('stj_thumbnail_extension').value;
 
         // キーワード、画像ファイル名、拡張子のペアを収集
-        const keywordInputs = document.querySelectorAll('.stj-keyword-input');
-        const imageInputs = document.querySelectorAll('.stj-image-input');
-        const extensionSelects = document.querySelectorAll('.stj-extension-select');
+        const keywordItems = document.querySelectorAll('.stj-keyword-item');
         const keywordImagePairs = [];
         let hasError = false;
 
-        for (let i = 0; i < keywordInputs.length; i++) {
-            const keyword = keywordInputs[i].value;
-            const imageName = imageInputs[i].value;
-            const extension = extensionSelects[i].value;
+        keywordItems.forEach((item, index) => {
+            const keywordInput = item.querySelector('.stj-keyword-input');
+            const imageInput = item.querySelector('.stj-image-input');
+            const extensionSelect = item.querySelector('.stj-extension-select');
+        
+            if (!keywordInput || !imageInput || !extensionSelect) return;
+        
+            const keyword = keywordInput.value;
+            const imageName = imageInput.value;
+            const extension = extensionSelect.value;
 
             if (keyword && imageName) {
                 keywordImagePairs.push({ keyword, imageName, extension });
             } else if (keyword || imageName) {
-                // 片方だけ入力されている場合はエラー
-                alert(`キーワードと画像ファイル名の両方を入力してください（行 ${i + 1}）`);
+                alert(`キーワードと画像ファイル名の両方を入力してください（行 ${index + 1}）`);
                 hasError = true;
-                break;
             }
-            // 両方空の場合は無視
-        }
+        });
 
         if (hasError) {
             return;
@@ -519,7 +520,7 @@
         const jsonData = {
             image_display_extension: imageDisplayExtension
         };
-        
+    
         // ファイルダウンロード処理
         const jsonStr = JSON.stringify(jsonData, null, 2);
         const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -531,7 +532,7 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
+    
         // モーダルを閉じる
         document.getElementById('stj_export_modal').style.display = 'none';
     }
