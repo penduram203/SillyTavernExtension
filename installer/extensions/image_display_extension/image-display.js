@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isResizing = false,
         offsetX, offsetY, isCustomWindowOpen = false;
     const imageMapCache = new Map();
-    let isDefaultImageFailed = false; // デフォルト画像エラーフラグ追加
+    let isDefaultImageFailed = false;
 
     // --- UI要素の作成 ---
     const imageContainer = document.createElement('div');
@@ -397,7 +397,155 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
     
-    // 修正点: 「|」で区切られた複数キーワード対応
+    // 改良点: OR条件とAND条件、および括弧による優先順位を処理する関数
+    function evaluateCondition(condition, text) {
+        console.log(`🔍 条件評価: "${condition}", テキスト: "${text}"`);
+        
+        // 括弧で囲まれた部分を処理
+        const processParentheses = (expr) => {
+            let start = expr.indexOf('(');
+            if (start === -1) return expr;
+            
+            let depth = 0;
+            let result = expr;
+            
+            while (result.includes('(')) {
+                start = result.indexOf('(');
+                depth = 1;
+                let end = start + 1;
+                
+                for (let i = start + 1; i < result.length; i++) {
+                    if (result[i] === '(') depth++;
+                    else if (result[i] === ')') depth--;
+                    
+                    if (depth === 0) {
+                        end = i;
+                        break;
+                    }
+                }
+                
+                if (depth !== 0) {
+                    console.error('括弧の対応が不正です:', result);
+                    return result;
+                }
+                
+                const innerExpr = result.substring(start + 1, end);
+                const innerResult = evaluateCondition(innerExpr, text);
+                result = result.substring(0, start) + innerResult.toString() + result.substring(end + 1);
+            }
+            return result;
+        };
+
+        // AND条件を処理
+        const processAnd = (expr) => {
+            if (!expr.includes('and')) return expr;
+            
+            const andParts = expr.split('and').map(part => part.trim());
+            console.log(`AND条件処理:`, andParts);
+            
+            // すべての部分がtrueかチェック
+            for (const part of andParts) {
+                let partResult;
+                if (part === 'true' || part === 'false') {
+                    partResult = part === 'true';
+                } else {
+                    // 再帰的に評価（OR条件や基本条件を含む可能性がある）
+                    partResult = evaluateCondition(part, text);
+                }
+                
+                if (!partResult) {
+                    console.log(`AND条件失敗: "${part}" が偽`);
+                    return false;
+                }
+            }
+            console.log(`AND条件成功`);
+            return true;
+        };
+
+        // OR条件を処理
+        const processOr = (expr) => {
+            if (!expr.includes('or')) return expr;
+            
+            const orParts = expr.split('or').map(part => part.trim());
+            console.log(`OR条件処理:`, orParts);
+            
+            // いずれかの部分がtrueかチェック
+            for (const part of orParts) {
+                let partResult;
+                if (part === 'true' || part === 'false') {
+                    partResult = part === 'true';
+                } else {
+                    // 再帰的に評価（AND条件や基本条件を含む可能性がある）
+                    partResult = evaluateCondition(part, text);
+                }
+                
+                if (partResult) {
+                    console.log(`OR条件成功: "${part}" が真`);
+                    return true;
+                }
+            }
+            console.log(`OR条件失敗`);
+            return false;
+        };
+
+        // 基本条件（単一キーワード）を評価
+        const evaluateBasicCondition = (basicExpr) => {
+            const trimmed = basicExpr.trim();
+            if (trimmed === 'true' || trimmed === 'false') {
+                return trimmed === 'true';
+            }
+            
+            const result = text.includes(trimmed);
+            console.log(`基本条件: "${trimmed}" in "${text}" -> ${result}`);
+            return result;
+        };
+
+        // 評価プロセス
+        let processed = condition;
+        
+        // まず括弧を処理
+        processed = processParentheses(processed);
+        console.log(`括弧処理後: ${processed}`);
+        
+        // 次にAND条件を処理
+        if (processed.includes('and')) {
+            const andResult = processAnd(processed);
+            console.log(`AND処理結果: ${andResult}`);
+            return andResult;
+        }
+        
+        // 次にOR条件を処理
+        if (processed.includes('or')) {
+            const orResult = processOr(processed);
+            console.log(`OR処理結果: ${orResult}`);
+            return orResult;
+        }
+        
+        // 基本条件を評価
+        const finalResult = evaluateBasicCondition(processed);
+        console.log(`最終結果: ${finalResult}`);
+        return finalResult;
+    }
+
+    // 改良点: 画像URLまたは画像URLの配列からランダムに1つ選択する関数
+    function getRandomImageSource(imageSource) {
+        if (Array.isArray(imageSource)) {
+            // 配列の場合、ランダムに1つ選択
+            if (imageSource.length === 0) {
+                console.warn("画像配列が空です");
+                return null;
+            }
+            const randomIndex = Math.floor(Math.random() * imageSource.length);
+            const selectedImage = imageSource[randomIndex];
+            console.log(`🎲 ランダム選択: ${selectedImage} (${randomIndex + 1}/${imageSource.length})`);
+            return selectedImage;
+        } else {
+            // 文字列の場合、そのまま返す
+            return imageSource;
+        }
+    }
+
+    // 改良点: OR条件とAND条件、および括弧による優先順位に対応
     function findMatchingImageUrl(text) {
         if (!text || !currentImageMap) return null;
     
@@ -405,28 +553,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const keywordEntries = Object.entries(currentImageMap)
             .filter(([key]) => key !== "default")
             .map(([key, url]) => {
-                // キーワードを「|」で分割して配列化
-                const keywords = key.split('|');
-            
                 return {
-                    // このエントリ内で最も長いキーワードの長さ（ソート用）
-                    maxKeywordLength: Math.max(...keywords.map(k => k.length)),
-                    keywords: keywords,
-                    url: url
+                    condition: key,
+                    url: url,
+                    // 条件の複雑さをスコアリング（括弧やANDを含む条件を優先）
+                    complexity: (key.match(/and/g) || []).length * 10 + 
+                               (key.match(/or/g) || []).length * 5 +
+                               (key.match(/[()]/g) || []).length * 3 +
+                               key.length
                 };
             })
-            // 最長キーワードの長さで降順ソート（長いキーワードを優先）
-            .sort((a, b) => b.maxKeywordLength - a.maxKeywordLength);
+            // 複雑さで降順ソート（複雑な条件を優先）
+            .sort((a, b) => b.complexity - a.complexity);
 
-        // 各エントリについて、いずれかのキーワードが含まれているかチェック
+        console.log(`🔍 テキスト検索: "${text}"`);
+        console.log(`評価する条件:`, keywordEntries.map(e => e.condition));
+
+        // 各エントリについて、条件を評価
         for (const entry of keywordEntries) {
-            if (entry.keywords.some(keyword => text.includes(keyword))) {
-                return entry.url;
+            try {
+                console.log(`--- 条件評価開始: "${entry.condition}" ---`);
+                const conditionMet = evaluateCondition(entry.condition, text);
+                console.log(`条件 "${entry.condition}" -> ${conditionMet}`);
+                
+                if (conditionMet) {
+                    // 条件に合致した場合、画像ソースを取得（単一または配列）
+                    const imageSource = entry.url;
+                    console.log(`✅ 条件 "${entry.condition}" にマッチ`);
+                    
+                    // 画像ソースからランダムに1つ選択
+                    const selectedImage = getRandomImageSource(imageSource);
+                    if (selectedImage) {
+                        console.log(`🖼️ 選択画像: ${selectedImage}`);
+                        return selectedImage;
+                    }
+                }
+            } catch (error) {
+                console.error(`❌ 条件評価エラー "${entry.condition}":`, error);
             }
         }
         return null;
     }
-
 
     // 修正点: ユーザーメッセージのみを対象にフィルタリング
     function findLastUserKeywordImage() {
@@ -529,7 +696,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 修正: ユーザーメッセージのみを対象とした画像検索
         const userKeywordImage = findLastUserKeywordImage();
-        const newUrl = userKeywordImage || currentImageMap.default;
+        
+        // デフォルト画像もランダム選択可能にする
+        let newUrl;
+        if (userKeywordImage) {
+            newUrl = userKeywordImage;
+        } else {
+            // デフォルト画像も配列の場合があるのでランダム選択
+            newUrl = getRandomImageSource(currentImageMap.default) || currentImageMap.default;
+        }
 
         if (imgElement.src !== newUrl) {
             console.log(`🖼️ 画像を更新: ${newUrl}`);
