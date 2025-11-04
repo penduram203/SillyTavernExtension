@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         DEFAULT_TOP = 100,
         DEFAULT_BG_COLOR = '#000000';
     const defaultImageMap = {
-        "default": "addchara/default.png"
+        "default": "addchara/default"
     };
     let currentCharacter = null,
         currentImageMap = defaultImageMap,
@@ -25,6 +25,71 @@ document.addEventListener('DOMContentLoaded', () => {
         offsetX, offsetY, isCustomWindowOpen = false;
     const imageMapCache = new Map();
     let isDefaultImageFailed = false;
+
+    // 対応する画像拡張子のリスト
+    const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'avif', 'bmp'];
+
+    // --- 拡張子自動検出関数 ---
+    async function detectImageExtension(imagePath) {
+        if (!imagePath) return null;
+        
+        // 既に拡張子がある場合はそのまま返す
+        if (imagePath.match(/\.(png|jpg|jpeg|webp|gif|avif|bmp)$/i)) {
+            return imagePath;
+        }
+        
+        // 各拡張子を試して存在確認
+        for (const ext of ALLOWED_EXTENSIONS) {
+            const imagePathWithExt = `${imagePath}.${ext}`;
+            const exists = await checkImageExists(imagePathWithExt);
+            if (exists) {
+                console.log(`✅ 拡張子自動検出: ${imagePathWithExt}`);
+                return imagePathWithExt;
+            }
+        }
+        
+        console.warn(`⚠️ 画像が見つかりません: ${imagePath}`);
+        return null;
+    }
+
+    // 画像の存在確認関数
+    function checkImageExists(imageUrl) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+            img.src = imageUrl;
+        });
+    }
+
+    // 画像マップの拡張子自動検出
+    async function detectImageMapExtensions(imageMap) {
+        if (!imageMap) return imageMap;
+        
+        const detectedMap = {};
+        
+        for (const [key, value] of Object.entries(imageMap)) {
+            if (Array.isArray(value)) {
+                // 配列の場合：各要素の拡張子を検出
+                const detectedArray = [];
+                for (const imagePath of value) {
+                    const detectedPath = await detectImageExtension(imagePath);
+                    if (detectedPath) {
+                        detectedArray.push(detectedPath);
+                    }
+                }
+                detectedMap[key] = detectedArray.length > 0 ? detectedArray : value;
+            } else if (typeof value === 'string') {
+                // 文字列の場合：単一の拡張子を検出
+                const detectedPath = await detectImageExtension(value);
+                detectedMap[key] = detectedPath || value;
+            } else {
+                detectedMap[key] = value;
+            }
+        }
+        
+        return detectedMap;
+    }
 
     // --- UI要素の作成 ---
     const imageContainer = document.createElement('div');
@@ -317,12 +382,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // 画像エラーハンドラの改善: デフォルト画像失敗時に空のデータURLを設定
-    imgElement.onerror = function() {
+    // 画像エラーハンドラの改善: 拡張子自動検出を試みる
+    imgElement.onerror = async function() {
         console.error("画像の読み込みに失敗しました:", this.src);
         
-        // デフォルト画像の読み込みに失敗した場合（複数拡張子対応）
-        if (this.src.match(/default\.(png|jpg|jpeg|webp|gif)$/i)) {
+        // 拡張子自動検出を試みる
+        if (this.src && !this.src.match(/\.(png|jpg|jpeg|webp|gif|avif|bmp)$/i)) {
+            console.log("🔄 拡張子自動検出を試みます:", this.src);
+            const detectedPath = await detectImageExtension(this.src);
+            if (detectedPath) {
+                console.log(`✅ 拡張子を検出: ${detectedPath}`);
+                this.src = detectedPath;
+                return;
+            }
+        }
+        
+        // デフォルト画像の読み込みに失敗した場合
+        if (this.src.match(/default\.(png|jpg|jpeg|webp|gif|avif|bmp)$/i) || this.src.endsWith('/default')) {
             isDefaultImageFailed = true;
             console.warn("⚠️ デフォルト画像が見つかりません。画像表示を無効化します");
             
@@ -643,7 +719,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (context && context.character && context.character.data && context.character.data.extensions && context.character.data.extensions.image_display_extension) {
             console.log(`✅ context APIから拡張データを検出しました: ${characterName}`);
-            return context.character.data.extensions.image_display_extension;
+            const imageMap = context.character.data.extensions.image_display_extension;
+            // 拡張子自動検出を適用
+            return await detectImageMapExtensions(imageMap);
         }
 
         try {
@@ -653,10 +731,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const foundMap = findImageMapInData(jsonData);
                 if (foundMap) {
                     console.log(`✅ 拡張機能のローカルマッピングを読み込みました: ${characterName}`);
-                    return foundMap;
+                    // 拡張子自動検出を適用
+                    return await detectImageMapExtensions(foundMap);
                 } else {
                     console.log(`✅ 拡張機能のローカルマッピングを読み込みました (従来形式): ${characterName}`);
-                    return jsonData;
+                    // 拡張子自動検出を適用
+                    return await detectImageMapExtensions(jsonData);
                 }
             }
         } catch (e) { /* エラーは無視 */ }
@@ -674,6 +754,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!newCharacter) {
             currentImageMap = defaultImageMap;
+            // デフォルト画像マップにも拡張子自動検出を適用
+            currentImageMap = await detectImageMapExtensions(defaultImageMap);
             updateImage();
             return;
         }
@@ -697,7 +779,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 修正: ユーザーメッセージのみを対象とした画像検索
         const userKeywordImage = findLastUserKeywordImage();
         
-        // デフォルト画像もランダム選択可能にする
+        // デフォルト画像もランダム選択可能にする（配列対応）
         let newUrl;
         if (userKeywordImage) {
             newUrl = userKeywordImage;
