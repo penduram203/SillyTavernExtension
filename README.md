@@ -54,7 +54,7 @@ linuxならinstall.shを自動インストール方法.txtに書いてある手�
 次にJSON出力ボタンで「キャラクター名_ext.json」をダウンロードして同じフォルダに入れて下さい<br>
 エラーが出て上手く行かない時はSillyTavernを開いたブラウザを更新してからもう一度試してみて下さい<br>
 ⇩のように画像ファイルとJSONが揃えば準備完了です<br>
-![](https://files.catbox.moe/v9vg7f.png)<br>
+![](https://i.imgur.com/VR4DnB5.png)<br>
 <br>
 最初はデフォルト状態の画像が表示され<br>
 予め設定しておいたキーワードがチャット欄に入力されると<br>
