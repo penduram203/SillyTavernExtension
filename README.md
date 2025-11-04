@@ -46,7 +46,9 @@ linuxならinstall.shを自動インストール方法.txtに書いてある手�
 <br>
 すると以下のようなウインドウが開いてJSONデータの編集モードになります<br>
 キーワードや画像ファイル名は自由に変更して下さい<br>
-![](https://files.catbox.moe/z4prql.png)<br>
+![](https://i.imgur.com/5vmbXJx.png)<br>
+![](https://i.imgur.com/wpX0hSs.png)<br>
+![](https://i.imgur.com/kTuChrv.png)<br>
 ⇧の設定画面の内容通りに画像ファイルをaddchara/キャラクター名/の中に配置します<br>
 例えば上記の構成なら「サキュバス城」という名前のフォルダ内に画像ファイルを全て置いて下さい<br>
 次にJSON出力ボタンで「キャラクター名_ext.json」をダウンロードして同じフォルダに入れて下さい<br>
