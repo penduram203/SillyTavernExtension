@@ -26,6 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageMapCache = new Map();
     let isDefaultImageFailed = false;
 
+    // ★★★ 追加: テキストモードの変数 ★★★
+    let currentTextMode = 'user'; // 'user' または 'ai'
+
+    // ★★★ 追加: ストリーミング検出用の変数 ★★★
+    let streamingTimer = null;
+    let lastStreamingText = '';
+    const STREAMING_DELAY = 1000; // 1秒間テキストに変化がなければストリーミング終了と判断
+
     // 対応する画像拡張子のリスト
     const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'avif', 'bmp'];
 
@@ -112,9 +120,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const resizeHandle = document.createElement('div');
     resizeHandle.id = 'resize-handle';
     imageContainer.appendChild(resizeHandle);
+    
+    // ★★★ 修正: コントロールコンテナ（CSSで横並び・最下部に配置される） ★★★
     const controlContainer = document.createElement('div');
     controlContainer.id = 'image-control-container';
     document.body.appendChild(controlContainer);
+    
+    // ★★★ 追加: テキストモード切り替えボタン ★★★
+    const textModeButton = document.createElement('button');
+    textModeButton.id = 'text-mode-button';
+    // ★★★ 修正: 「UT」に名称変更 ★★★
+    textModeButton.textContent = 'UT';
+    textModeButton.title = 'クリックでテキストモード切り替え（ユーザー / AI）';
+    controlContainer.appendChild(textModeButton);
+
     const customButton = document.createElement('button');
     customButton.id = 'custom-button';
     customButton.textContent = 'カスタム';
@@ -224,6 +243,19 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleCustomWindow();
     });
 
+    // ★★★ 追加: テキストモード切り替え関数 ★★★
+    function toggleTextMode() {
+        currentTextMode = currentTextMode === 'user' ? 'ai' : 'user';
+        // ★★★ 修正: 「UT」と「AI」に表示変更 ★★★
+        textModeButton.textContent = currentTextMode === 'user' ? 'UT' : 'AI';
+        textModeButton.title = `クリックでテキストモード切り替え（現在: ${currentTextMode === 'user' ? 'ユーザー' : 'AI'}）`;
+        console.log(`🔄 テキストモードを切り替え: ${currentTextMode}`);
+        saveDisplayState();
+        updateImage(); // モード切り替え時に画像を更新
+    }
+    
+    textModeButton.addEventListener('click', toggleTextMode);
+
     function saveDisplayState() {
         if (currentMode === 'normal') {
             preNormalState = {
@@ -236,7 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const state = {
             bgColor: colorPicker.value,
             currentMode: currentMode,
-            preNormalState: preNormalState
+            preNormalState: preNormalState,
+            // ★★★ 追加: テキストモードを保存 ★★★
+            textMode: currentTextMode
         };
         localStorage.setItem('imageDisplayState', JSON.stringify(state));
     }
@@ -252,6 +286,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     colorPicker.value = state.bgColor;
                 }
                 currentMode = state.currentMode || 'normal';
+                // ★★★ 追加: テキストモードを復元 ★★★
+                if (state.textMode) {
+                    currentTextMode = state.textMode;
+                    // ★★★ 修正: 「UT」と「AI」に表示変更 ★★★
+                    textModeButton.textContent = currentTextMode === 'user' ? 'UT' : 'AI';
+                    textModeButton.title = `クリックでテキストモード切り替え（現在: ${currentTextMode === 'user' ? 'ユーザー' : 'AI'}）`;
+                }
                 switch (currentMode) {
                     case 'maximized':
                         applyMaximizeMode();
@@ -671,17 +712,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    // 修正点: ユーザーメッセージのみを対象にフィルタリング
-    function findLastUserKeywordImage() {
-        // ユーザーメッセージのみを選択 (is_user="true")
-        const userMessages = Array.from(document.querySelectorAll('.mes[is_user="true"] .mes_text'));
+    // ★★★ 修正: テキストモードに応じて検索対象を変更 ★★★
+    function findLastKeywordImage() {
+        // 現在のテキストモードに基づいて検索対象を決定
+        const isUserMode = currentTextMode === 'user';
+        const selector = `.mes[is_user="${isUserMode}"] .mes_text`;
         
+        const messages = Array.from(document.querySelectorAll(selector));
+        console.log(`🔍 ${isUserMode ? 'ユーザー' : 'AI'}メッセージを検索: ${messages.length}件見つかりました`);
+
         // 最新のメッセージから古い順にチェック
-        for (let i = userMessages.length - 1; i >= 0; i--) {
-            const text = userMessages[i].textContent;
+        for (let i = messages.length - 1; i >= 0; i--) {
+            const text = messages[i].textContent;
             const imageUrl = findMatchingImageUrl(text);
-            if (imageUrl) return imageUrl;
+            if (imageUrl) {
+                console.log(`✅ ${isUserMode ? 'ユーザー' : 'AI'}メッセージから画像を発見: ${imageUrl}`);
+                return imageUrl;
+            }
         }
+        console.log(`❌ ${isUserMode ? 'ユーザー' : 'AI'}メッセージにマッチする画像は見つかりませんでした`);
         return null;
     }
 
@@ -768,6 +817,40 @@ document.addEventListener('DOMContentLoaded', () => {
         updateImage();
     }
     
+    // ★★★ 修正: ストリーミング検出機能を追加 ★★★
+    function handleStreamingUpdate() {
+        if (currentTextMode !== 'ai') {
+            // AIモードでない場合は即時更新
+            updateImage();
+            return;
+        }
+        
+        // AIモードの場合、最新のAIメッセージを取得
+        const aiMessages = Array.from(document.querySelectorAll('.mes[is_user="false"] .mes_text'));
+        if (aiMessages.length === 0) return;
+        
+        const latestMessage = aiMessages[aiMessages.length - 1];
+        const currentText = latestMessage.textContent;
+        
+        // 前回のテキストと同じ場合は何もしない
+        if (currentText === lastStreamingText) return;
+        
+        console.log(`🔄 ストリーミング中: テキスト長 ${currentText.length}文字`);
+        lastStreamingText = currentText;
+        
+        // 既存のタイマーをクリア
+        if (streamingTimer) {
+            clearTimeout(streamingTimer);
+        }
+        
+        // 新しいタイマーを設定（1秒間テキストに変化がなければストリーミング終了と判断）
+        streamingTimer = setTimeout(() => {
+            console.log(`✅ ストリーミング終了: 最終テキスト長 ${currentText.length}文字`);
+            updateImage();
+            streamingTimer = null;
+        }, STREAMING_DELAY);
+    }
+    
     // 現在のチャット内容に基づいて画像を更新
     function updateImage() {
         // デフォルト画像エラー状態をリセット
@@ -776,13 +859,13 @@ document.addEventListener('DOMContentLoaded', () => {
             isDefaultImageFailed = false;
         }
         
-        // 修正: ユーザーメッセージのみを対象とした画像検索
-        const userKeywordImage = findLastUserKeywordImage();
+        // ★★★ 修正: テキストモードに応じて検索対象を変更 ★★★
+        const keywordImage = findLastKeywordImage();
         
         // デフォルト画像もランダム選択可能にする（配列対応）
         let newUrl;
-        if (userKeywordImage) {
-            newUrl = userKeywordImage;
+        if (keywordImage) {
+            newUrl = keywordImage;
         } else {
             // デフォルト画像も配列の場合があるのでランダム選択
             newUrl = getRandomImageSource(currentImageMap.default) || currentImageMap.default;
@@ -797,14 +880,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- アプリケーションの起動 ---
-    // 1. チャット欄のキーワード監視（ユーザーメッセージのみ対象）
+    // 1. チャット欄のキーワード監視（テキストモードに応じて対象を変更）
     const chatContainer = document.getElementById('chat');
     if (chatContainer) {
-        new MutationObserver(() => updateImage()).observe(chatContainer, {
+        new MutationObserver(() => {
+            // ★★★ 修正: ストリーミング検出機能を使用 ★★★
+            handleStreamingUpdate();
+        }).observe(chatContainer, {
             childList: true,
-            subtree: true // サブツリーの変更も監視
+            subtree: true, // サブツリーの変更も監視
+            characterData: true, // テキスト内容の変更も監視
+            childList: true,
+            subtree: true
         });
-        console.log("✅ チャット欄(ユーザーメッセージ)の監視を開始しました。");
+        console.log(`✅ チャット欄(${currentTextMode === 'user' ? 'ユーザー' : 'AI'}メッセージ)の監視を開始しました。`);
     }
 
     // 2. キャラクター変更の監視
