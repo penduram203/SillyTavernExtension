@@ -71,17 +71,19 @@
     box-shadow: -1px -1px 2px rgba(0,0,0,0.2);
 }
 
-/* コントロールボタンコンテナ */
+/* コントロールボタンコンテナ - 修正: 横並びで最下部に配置 */
 #image-control-container {
     position: fixed;
     left: 10px;
-    bottom: 10px;
+    bottom: 10px; /* 最下部に配置 */
     z-index: 10000;
     display: flex;
+    flex-direction: row; /* 横並び */
     gap: 5px;
 }
 
 /* コントロールボタン共通スタイル */
+#text-mode-button, /* 追加: テキストモードボタン */
 #custom-button, 
 #maximize-button, 
 #half-maximize-button {
@@ -91,15 +93,18 @@
     color: white;
     border: none;
     border-radius: 3px;
-    opacity: 0.1;
+    opacity: 0.1; /* 透明度10% */
     transition: background-color 0.0s, opacity 0.0s;
+    font-size: 12px;
+    white-space: nowrap;
 }
 
+#text-mode-button:hover, /* 追加: テキストモードボタンのホバー */
 #custom-button:hover, 
 #maximize-button:hover, 
 #half-maximize-button:hover {
     background-color: #666;
-    opacity: 1;
+    opacity: 1; /* ホバー時は不透明度100% */
 }
 
 /* 無効状態のボタンスタイル */
