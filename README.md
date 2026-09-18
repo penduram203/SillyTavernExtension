@@ -1,19 +1,3 @@
-# インストール
-まず　https://github.com/penduram203/SillyTavernExtension/tree/main
-にアクセスし、<br>
-「<> code」をクリックしてから「Download ZIP」をクリックしてファイルをダウンロード<br>
-![](https://files.catbox.moe/pn6hwh.png)<br>
-<br>
-ZIPファイルを解凍して、中にあるinstallerフォルダをSillyTavernフォルダに移動させる<br>
-![](https://files.catbox.moe/lzsx5l.png)<br>
-<br>
-installerフォルダを開いてinstall.batをクリックして自動インストール開始<br>
-linuxならinstall.shを自動インストール方法.txtに書いてある手順でインストール<br>
-失敗する場合は手動インストール.txtを見て下さい<br>
-![](https://files.catbox.moe/7humtn.png)<br>
-<br>
-これでインストール完了です<br>
-<br>
 # キャラクターの自作
 #### 拡張機能とは無関係の公式機能ですが一応キャラ作成の方法を紹介しておきます<br>
 #### まずキャラクター管理パネルを開いて新規キャラ作成アイコンをクリックします
